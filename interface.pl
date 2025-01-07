@@ -1,4 +1,6 @@
 :- use_module(library(pce)).
+:- encoding(utf8).
+:- consult('jeu.pl').  % Charger le fichier jeu.pl
 
 % Prédicat principal pour démarrer l'interface
 demarrer_interface :-
@@ -31,6 +33,7 @@ creer_bouton(Dialog, Texte, Action) :-
 % Création de la grille de jeu
 nouvelle_partie :-
     new(F, frame('Puissance 4')),
+    nb_setval(frame_ref, F),  % Stocker la référence à la frame
     send(F, size, size(800, 650)),
     
     new(D, dialog),
@@ -71,6 +74,11 @@ nouvelle_partie :-
            forall(between(0, 6, Col),
                   creer_cercle(Grille, Ligne, Col))),
     
+    demarrer_jeu,  % Initialise une nouvelle partie
+    
+    % Stocke la référence à la grille pour les mises à jour
+    nb_setval(grille_ref, Grille),
+    
     send(F, open_centered).
 
 % Création d'un cercle dans la grille
@@ -84,11 +92,11 @@ creer_cercle(Grille, Ligne, Col) :-
 
 % Gestion du clic sur une colonne
 jouer_colonne(Col) :-
-    format('Colonne selectionnee: ~w~n', [Col]).
+    jouer_coup_interface(Col).
 
 % Action pour quitter
 quitter_jeu :-
-    (   send(@display, confirm, 'Voulez-vous vraiment quitter ?')
+    (   send(@display, confirm, 'Voulez-vous vraiment quitter ?', @default, @default, 'utf8')
     ->  send(@display, reset),  % Nettoie toutes les fenêtres
         retractall(grille(_)),  % Nettoie les données du jeu
         halt                    % Quitte Prolog
@@ -97,18 +105,18 @@ quitter_jeu :-
 
 % Afficher les règles du jeu
 afficher_regles :-
-    new(D, dialog('Regles du Puissance 4')),
+    new(D, dialog('Règles du Puissance 4')),
     send(D, size, size(300, 200)),
     
-    new(Texte, text('Regles du jeu :')),
+    new(Texte, text('Règles du jeu :')),
     send(Texte, font, font(helvetica, bold, 14)),
     send(D, append, Texte),
     send(D, append, label(space, '')),
     
     new(Regles, text),
     send(Regles, font, font(helvetica, normal, 12)),
-    send(Regles, append, '- Les joueurs jouent tour a tour\n'),
-    send(Regles, append, '- Le premier a aligner 4 jetons gagne\n'),
+    send(Regles, append, '- Les joueurs jouent tour à tour\n'),
+    send(Regles, append, '- Le premier à aligner 4 jetons gagne\n'),
     send(Regles, append, '- Les jetons tombent en bas de la colonne'),
     send(D, append, Regles),
     
@@ -117,6 +125,46 @@ afficher_regles :-
     send(D, append, Bouton),
     
     send(D, open_centered).
+
+% Prédicat pour mettre à jour l'interface graphique
+mettre_a_jour_interface(Plateau) :-
+    nb_getval(grille_ref, Grille),
+    forall(between(0, 5, Ligne),
+           forall(between(0, 6, Col),
+                  mettre_a_jour_case(Grille, Plateau, Ligne, Col))).
+
+% Mettre à jour une case spécifique
+mettre_a_jour_case(Grille, Plateau, Ligne, Col) :-
+    X is Col * 60 + 30,
+    Y is Ligne * 60 + 30,
+    get_pion(Plateau, Ligne, Col, Pion),
+    couleur_pion(Pion, Couleur),
+    send(Grille, display, new(C, circle(25))),
+    send(C, center, point(X, Y)),
+    send(C, fill_pattern, colour(Couleur)).
+
+% Définir la couleur selon le pion
+couleur_pion('X', red).
+couleur_pion('O', yellow).
+couleur_pion(_, white).
+
+% Obtenir le pion à une position donnée
+get_pion(Plateau, Ligne, Col, Pion) :-
+    nth0(Col, Plateau, Colonne),
+    Pos is 5 - Ligne,  % Inverser la ligne car l'affichage est de haut en bas
+    (nth0(Pos, Colonne, Pion) -> true ; Pion = ' ').
+
+% Annoncer la victoire
+annoncer_victoire(Joueur) :-
+    (Joueur = 'X' -> CouleurJoueur = 'Rouge' ; CouleurJoueur = 'Jaune'),
+    atomic_list_concat(['Le joueur ', CouleurJoueur, ' a gagné !'], Message),
+    send(@display, inform, Message, @default, @default, 'utf8'),
+    % Fermer la fenêtre de jeu
+    nb_getval(frame_ref, Frame),
+    send(Frame, destroy),
+    % Nettoyer les références
+    nb_delete(frame_ref),
+    nb_delete(grille_ref).
 
 % Démarrage du menu au chargement
 :- initialization(demarrer_interface).
