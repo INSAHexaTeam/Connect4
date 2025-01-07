@@ -142,6 +142,25 @@ nouvelle_partie :-
     
     new(D, dialog),
     send(F, append, D),
+
+     % Création de l'indicateur de tour
+    new(TourBox, dialog_group('')),
+    send(TourBox, size, size(420, 40)),
+    send(D, append, TourBox),
+    
+    % Texte "Tour du joueur : "
+    new(TexteTour, text('Tour du joueur')),
+    send(TexteTour, font, font(helvetica, bold, 14)),
+    send(TourBox, display, TexteTour, point(150, 10)),
+    
+    % Cercle indicateur
+    new(Indicateur, circle(20)),
+    send(Indicateur, center, point(280, 20)),
+    send(Indicateur, fill_pattern, colour(red)),  % Rouge commence
+    send(TourBox, display, Indicateur),
+    
+    % Stocker la référence à l'indicateur
+    nb_setval(cercle_tour, Indicateur),
     
     % Création de la grille visuelle (6x7)
     new(Grille, picture),
@@ -154,6 +173,19 @@ nouvelle_partie :-
     send(Grille, recogniser,
         handler(loc_move, message(@prolog, survol_colonne, @event?position, Grille))),
     send(D, append, Grille, below),
+    
+    % % Ajout de l'indicateur de tour
+    % new(TourLabel, text('Tour du joueur:')),
+    % send(TourLabel, font, font(helvetica, bold, 14)),
+    % send(D, append, TourLabel),
+    
+    % % Cercle indicateur de tour
+    % new(CercleTour, circle(20)),
+    % send(CercleTour, fill_pattern, colour(red)),  % Le rouge commence toujours
+    % nb_setval(cercle_tour, CercleTour),  % Stocker la référence pour les mises à jour
+    % send(D, append, CercleTour),
+
+   
     
     % Dessin du fond bleu
     new(Fond, box(420, 360)),
@@ -370,3 +402,22 @@ detecter_colonne(Position) :-
         ColNum is Col + 1,
         jouer_coup_interface(ColNum)
     ; true).
+
+% Ajouter cette fonction pour mettre à jour l'indicateur de tour
+mettre_a_jour_indicateur_tour(Joueur) :-
+    nb_getval(cercle_tour, CercleTour),
+    (Joueur = 'X' -> 
+        send(CercleTour, fill_pattern, colour(red))
+    ; 
+        send(CercleTour, fill_pattern, colour(yellow))
+    ).
+
+% Modifier la fonction jouer_coup_interface pour mettre à jour l'indicateur
+% jouer_coup_interface(Col) :-
+%     etat_jeu(Plateau, JoueurActuel),
+%     coup_valide(Plateau, Col),
+%     jouer_coup(Col),
+%     mettre_a_jour_interface(Plateau),
+%     % Mettre à jour l'indicateur pour le prochain joueur
+%     (JoueurActuel = 'X' -> ProchainJoueur = 'O' ; ProchainJoueur = 'X'),
+%     mettre_a_jour_indicateur_tour(ProchainJoueur).

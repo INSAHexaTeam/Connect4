@@ -28,6 +28,7 @@ jouer_coup_interface(Colonne) :-
         changer_joueur(Joueur, ProchainJoueur),
         assertz(etat_jeu(NouveauPlateau, ProchainJoueur)),
         mettre_a_jour_interface(NouveauPlateau),
+        mettre_a_jour_indicateur_tour(ProchainJoueur),
         (verifier_victoire(NouveauPlateau, Joueur) ->
             annoncer_victoire(Joueur)
         ; true)
