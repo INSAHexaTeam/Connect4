@@ -17,10 +17,18 @@
 
 % Prédicat principal pour démarrer l'interface
 demarrer_interface :-
+    % Vérifier si un menu existe déjà et le détruire
+    (object(@menu) -> send(@menu, destroy) ; true),
+    
     new(@menu, dialog('Menu - Puissance 4')),
     send(@menu, name, menu),  % Donner un nom à la fenêtre pour la retrouver plus tard
-    send(@menu, recogniser, click_gesture(left, '', single, 
-        message(@prolog, afficher_coordonnees, @event?position))),
+    % Ajouter les gestionnaires d'événements séparément
+    send(@menu, recogniser, 
+        click_gesture(left, '', single, 
+            message(@prolog, afficher_coordonnees, @event?position))),
+    % Gestionnaire pour le mouvement de la souris
+    send(@menu, recogniser,
+        handler(loc_move, message(@prolog, suivre_souris, @event?position))),
     send(@menu, gap, size(80, 40)),
     send(@menu, size, size(400, 400)),
 
@@ -135,22 +143,13 @@ nouvelle_partie :-
     new(D, dialog),
     send(F, append, D),
     
-    % Création des boutons pour chaque colonne dans un dialog horizontal
-    new(BoutonsPanel, picture),
-    send(BoutonsPanel, size, size(440, 50)),
-    send(D, append, BoutonsPanel),
-    
-    % Création des boutons avec positionnement absolu
-    forall(between(1, 7, Col), (
-        new(B, button(Col, message(@prolog, jouer_colonne, Col))),
-        send(B, size, size(20, 20)),          % Boutons plus grands
-        X is (Col-1) * 60 + 10,              % Ajustement de l'espacement
-        send(BoutonsPanel, display  , B, point(X, 5))
-    )),
-    
     % Création de la grille visuelle (6x7)
     new(Grille, picture),
     send(Grille, size, size(420, 360)),
+    % Ajouter un gestionnaire de clics sur la grille
+    send(Grille, recogniser,
+        click_gesture(left, '', single,
+            message(@prolog, detecter_colonne, @event?position))),
     send(D, append, Grille, below),
     
     % Dessin du fond bleu
@@ -283,7 +282,7 @@ afficher_coordonnees(Position) :-
 actualiser_menu :-
     catch(
         (   
-            send(@menu, free),
+            (object(@menu) -> send(@menu, destroy) ; true),
             % Relancer l'interface
             demarrer_interface
         ),
@@ -292,3 +291,21 @@ actualiser_menu :-
             demarrer_interface  % Relancer quand même l'interface en cas d'erreur
         )
     ).
+
+% Prédicat pour suivre la position de la souris
+suivre_souris(Position) :-
+    get(Position, x, X),
+    get(Position, y, Y),
+    format('\rPosition de la souris: (~w, ~w)', [X, Y]).
+
+% Prédicat pour détecter la colonne cliquée
+detecter_colonne(Position) :-
+    get(Position, x, X),
+    % Calculer la colonne en fonction de la position X
+    Col is floor(X / 60),
+    % Vérifier que la colonne est valide (0-6)
+    (Col >= 0, Col =< 6 ->
+        % Convertir en numéro de colonne (1-7) et jouer
+        ColNum is Col + 1,
+        jouer_coup_interface(ColNum)
+    ; true).
