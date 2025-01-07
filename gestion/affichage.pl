@@ -1,9 +1,22 @@
-% Fichier : gestion/affichage.pl
-
 % Afficher le plateau de jeu
 afficher_plateau(Plateau) :-
-    transpose(Plateau, Lignes),
-    maplist(afficher_ligne, Lignes).
+    remplir_plateau(Plateau, PlateauRempli),  % Compléter les colonnes pour une longueur uniforme
+    transpose(PlateauRempli, Lignes),        % Transformer colonnes -> lignes
+    reverse(Lignes, LignesAffichees),        % Afficher de bas en haut
+    maplist(afficher_ligne, LignesAffichees),
+    writeln("1 2 3 4 5 6 7").                % Afficher les numéros des colonnes en bas
+
+remplir_plateau([], []).
+remplir_plateau([Colonne|Cols], [ColonneRemplie|PlateauRempli]) :-
+    remplir_colonne(Colonne, ColonneRemplie),
+    remplir_plateau(Cols, PlateauRempli).
+
+remplir_colonne(Colonne, ColonneRemplie) :-
+    length(Colonne, Taille),
+    Manque is 6 - Taille,
+    length(Espaces, Manque),
+    maplist(=(' '), Espaces),  % Créer une liste de cases vides
+    append(Colonne, Espaces, ColonneRemplie).
 
 % Afficher une ligne
 afficher_ligne(Ligne) :-
@@ -12,7 +25,7 @@ afficher_ligne(Ligne) :-
 
 % Afficher une case
 afficher_case(Case) :-
-    (var(Case) -> write('.'); write(Case)),
+    (Case = ' ' -> write('.'); write(Case)),
     write(' ').
 
 % Transposer le plateau (colonnes -> lignes)
