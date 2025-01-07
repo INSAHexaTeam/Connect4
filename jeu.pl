@@ -95,10 +95,10 @@ diagonale_droite_gauche(Plateau, Diagonale) :-
     reverse(Plateau, PlateauInverse),
     diagonale_aux(PlateauInverse, 1, Diagonale).
 
-% Récupérer les diagonales à partir d'une position donnée
+% Récupérer les diagonale 
 diagonale_aux([], _, []).
 diagonale_aux([Col|Cols], N, [Elem|Diagonale]) :-
-    nth1(N, Col, Elem), % Récupère l'élément en position N de la colonne
+    nth1(N, Col, Elem), % Récupère l
     N1 is N + 1,
     diagonale_aux(Cols, N1, Diagonale).
 diagonale_aux([_|Cols], N, Diagonale) :-
