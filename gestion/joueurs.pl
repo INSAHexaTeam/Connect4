@@ -13,6 +13,7 @@ demander_colonne(Joueur, Colonne, TypeJoueur) :-
         )
     ; TypeJoueur = 'ia' ->
         writeln("L'IA réfléchit..."),
+        sleep(1),
         choisir_colonne_ia(Colonne),
         format("L'IA a choisi la colonne ~w.", [Colonne])
     ).
