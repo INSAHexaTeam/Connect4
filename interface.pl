@@ -143,25 +143,6 @@ nouvelle_partie :-
     new(D, dialog),
     send(F, append, D),
     
-    % Création de l'indicateur de tour
-    new(TourBox, dialog_group('')),
-    send(TourBox, size, size(420, 40)),
-    send(D, append, TourBox),
-    
-    % Texte "Tour du joueur : "
-    new(TexteTour, text('Tour du joueur')),
-    send(TexteTour, font, font(helvetica, bold, 14)),
-    send(TourBox, display, TexteTour, point(150, 10)),
-    
-    % Cercle indicateur
-    new(Indicateur, circle(20)),
-    send(Indicateur, center, point(280, 20)),
-    send(Indicateur, fill_pattern, colour(red)),  % Rouge commence
-    send(TourBox, display, Indicateur),
-    
-    % Stocker la référence à l'indicateur
-    nb_setval(indicateur_ref, Indicateur),
-    
     % Création de la grille visuelle (6x7)
     new(Grille, picture),
     send(Grille, size, size(420, 360)),
@@ -348,29 +329,6 @@ annoncer_victoire(Joueur) :-
     % Mettre à jour la grille du menu
     demarrer_interface.
 
-% Mettre à jour l'indicateur de tour
-mettre_a_jour_indicateur(Joueur) :-
-    nb_getval(indicateur_ref, Indicateur),
-    (Joueur = 'X' -> 
-        send(Indicateur, fill_pattern, colour(yellow))  % Prochain tour : Jaune
-    ; 
-        send(Indicateur, fill_pattern, colour(red))     % Prochain tour : Rouge
-    ).
-
-% Jouer un coup et mettre à jour l'interface
-jouer_coup_interface(Colonne) :-
-    etat_jeu(Plateau, Joueur),
-    coup_valide(Plateau, Colonne),
-    jouer_coup(Plateau, Colonne, Joueur, NouveauPlateau),
-    retract(etat_jeu(_, _)),
-    prochain_joueur(Joueur, ProchainJoueur),
-    assertz(etat_jeu(NouveauPlateau, ProchainJoueur)),
-    nb_getval(grille_ref, Grille),
-    mettre_a_jour_interface(NouveauPlateau),
-    mettre_a_jour_indicateur(Joueur),
-    (partie_gagnee(NouveauPlateau, Joueur) ->
-        annoncer_victoire(Joueur)
-    ; true).
 
 % Démarrage du menu au chargement
 :- initialization(demarrer_interface).
