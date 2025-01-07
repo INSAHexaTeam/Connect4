@@ -2,33 +2,127 @@
 :- encoding(utf8).
 :- consult('jeu.pl').  % Charger le fichier jeu.pl
 
+% État de la dernière partie (pour l'affichage décoratif)
+:- dynamic derniere_partie/1.
+% Compteurs de victoires
+:- dynamic score/2.  % score(Couleur, NombreVictoires)
+
+% Initialiser les scores
+:- assertz(score(rouge, 0)),
+   assertz(score(jaune, 0)).
+
+% Initialiser l'état de la dernière partie (grille vide)
+:- plateau_vide(PlateauVide),
+   assertz(derniere_partie(PlateauVide)).
+
 % Prédicat principal pour démarrer l'interface
 demarrer_interface :-
     new(D, dialog('Menu - Puissance 4')),
-    send(D, gap, size(20, 20)),
-    send(D, size, size(400, 300)),
-    
-    % Titre
-    new(Titre, label(titre, 'PUISSANCE 4')),
-    send(Titre, font, bold),
-    send(D, append, Titre),
-    
+    send(D, name, menu),  % Donner un nom à la fenêtre pour la retrouver plus tard
+    send(D, recogniser, click_gesture(left, '', single, 
+        message(@prolog, afficher_coordonnees, @event?position))),
+    send(D, gap, size(80, 40)),
+    send(D, size, size(400, 400)),
+
+
     % Espace
     send(D, append, label(space, '')),
     
+    % Création de la grille décorative
+    new(Grille, picture),
+    send(Grille, size, size(195, 165)),
+    send(D, append, Grille, below), % Position relative au dernier élément
+    
+    % Dessin du fond bleu
+    new(Fond, box(210, 180)),
+    send(Fond, fill_pattern, colour(blue)),
+    send(Grille, display, Fond),
+    
+    % Création des cercles et affichage de la dernière partie
+    derniere_partie(Plateau),
+    forall(between(0, 5, Ligne),
+           forall(between(0, 6, Col),
+                  creer_cercle_menu(Grille, Plateau, Ligne, Col))),
+    
+    % Affichage des scores
+    
+    % Création d'un conteneur vertical pour les boutons
+    new(VBox, dialog_group('')),
+
+    new(Titre, label(titre, 'PUISSANCE 4')),
+    send(Titre, font, bold),
+    send(VBox, append, Titre),
+
+    send(VBox, size, size(400, 400)),
+    send(VBox, gap, size(10, 20)),  % Espacement entre les boutons
+
+    
+    
+    % % Score Jaune
+    score(jaune, ScoreJaune),
+    atomic_list_concat([ScoreJaune,' :'], TexteJaune),
+    new(JauneLabel, text(TexteJaune)),
+    send(JauneLabel, colour, black),
+    send(JauneLabel, font, font(helvetica, bold, 12)),
+    send(VBox, display, JauneLabel,point(205,301)),
+
+    % Score Rouge
+    score(rouge, ScoreRouge),
+    atomic_list_concat([': ', ScoreRouge], TexteRouge),
+    new(RougeLabel, text(TexteRouge)),
+    send(RougeLabel, colour, black),
+    send(RougeLabel, font, font(helvetica, bold, 12)),
+    send(VBox, display, RougeLabel,point(150,301)),
+
+    % Text VS
+    new(VSLabel, text('VS')),
+    send(VSLabel, colour, black),
+    send(VSLabel, font, font(helvetica, bold, 12)),
+    send(VBox, display, VSLabel,point(178,301)),
+
+    send(D, append, VBox),
+
+    %Cercle jaune
+    new(Cercle, circle(12)),
+    send(Cercle, center, point(230, 310)),
+    send(Cercle, fill_pattern, colour(yellow)),
+    send(D, display, Cercle),
+
+    %Cercle rouge
+    new(Cercle2, circle(12)),
+    send(Cercle2, center, point(140, 310)),
+    send(Cercle2, fill_pattern, colour(red)),
+    send(D, display, Cercle2),
+
+    
+
+
+
+
     % Boutons du menu
-    creer_bouton(D, 'JOUER', nouvelle_partie),
-    creer_bouton(D, 'REGLES DU JEU', afficher_regles),
-    creer_bouton(D, 'QUITTER', quitter_jeu),
+    creer_bouton(VBox, 'JOUER', nouvelle_partie,point(40,350)),
+    creer_bouton(VBox, 'REGLES DU JEU', afficher_regles,point(130,350)),
+    creer_bouton(VBox, 'QUITTER', quitter_jeu,point(280,350)),
     
     send(D, open_centered).
 
+% Création d'un cercle dans la grille du menu
+creer_cercle_menu(Grille, Plateau, Ligne, Col) :-
+    X is Col * 30 + 15,
+    Y is Ligne * 30 + 15,
+    get_pion(Plateau, Ligne, Col, Pion),
+    couleur_pion(Pion, Couleur),
+    new(Cercle, circle(12)),
+    send(Cercle, center, point(X, Y)),
+    send(Cercle, fill_pattern, colour(Couleur)),
+    send(Grille, display, Cercle).
+
 % Création d'un bouton standardisé
-creer_bouton(Dialog, Texte, Action) :-
+creer_bouton(Dialog, Texte, Action,Pos) :-
     new(B, button(Texte, message(@prolog, Action))),
     send(B, font, font(helvetica, normal, 14)),
     send(B, size, size(200, 40)),
-    send(Dialog, append, B).
+    send(Dialog, display, B,Pos).
 
 % Création de la grille de jeu
 nouvelle_partie :-
@@ -42,14 +136,7 @@ nouvelle_partie :-
     % Création des boutons pour chaque colonne dans un dialog horizontal
     new(BoutonsPanel, picture),
     send(BoutonsPanel, size, size(440, 50)),
-    % send(BoutonsPanel, gap, size(0, 0)),
-    % send(BoutonsPanel, background, colour(yellow)),
     send(D, append, BoutonsPanel),
-    
-    % Création d'un panel pour contenir les boutons
-    % new(ButtonBox, box(440, 50)),
-    % send(ButtonBox, fill_pattern, colour(yellow)),
-    % send(BoutonsPanel, display, ButtonBox),
     
     % Création des boutons avec positionnement absolu
     forall(between(1, 7, Col), (
@@ -159,12 +246,58 @@ annoncer_victoire(Joueur) :-
     (Joueur = 'X' -> CouleurJoueur = 'Rouge' ; CouleurJoueur = 'Jaune'),
     atomic_list_concat(['Le joueur ', CouleurJoueur, ' a gagné !'], Message),
     send(@display, inform, Message, @default, @default, 'utf8'),
+    % Sauvegarder l'état final de la partie
+    etat_jeu(Plateau, _),
+    retractall(derniere_partie(_)),
+    assertz(derniere_partie(Plateau)),
+    % Mettre à jour le score
+    (Joueur = 'X' -> Couleur = rouge ; Couleur = jaune),
+    score(Couleur, Score),
+    NouveauScore is Score + 1,
+    retract(score(Couleur, Score)),
+    assertz(score(Couleur, NouveauScore)),
     % Fermer la fenêtre de jeu
     nb_getval(frame_ref, Frame),
     send(Frame, destroy),
     % Nettoyer les références
     nb_delete(frame_ref),
-    nb_delete(grille_ref).
+    nb_delete(grille_ref),
+    % Mettre à jour la grille du menu
+    mettre_a_jour_menu.
+
+% Mettre à jour la grille du menu
+mettre_a_jour_menu :-
+    % Trouver la fenêtre du menu
+    get(@display, frame, menu, D),
+    % Trouver la grille dans la fenêtre
+    get(D, member, picture, Grille),
+    % Effacer le contenu actuel
+    send(Grille, clear),
+    % Redessiner le fond bleu
+    new(Fond, box(210, 180)),
+    send(Fond, fill_pattern, colour(blue)),
+    send(Grille, display, Fond),
+    % Redessiner les cercles avec le nouvel état
+    derniere_partie(Plateau),
+    forall(between(0, 5, Ligne),
+           forall(between(0, 6, Col),
+                  creer_cercle_menu(Grille, Plateau, Ligne, Col))),
+    % Mettre à jour les scores
+    get(D, member, dialog_group, ScoreBox),
+    get(ScoreBox, member, text, RougeLabel),
+    get(ScoreBox, member, text, JauneLabel),
+    score(rouge, ScoreRouge),
+    score(jaune, ScoreJaune),
+    atomic_list_concat(['Rouge : ', ScoreRouge], TexteRouge),
+    atomic_list_concat(['Jaune : ', ScoreJaune], TexteJaune),
+    send(RougeLabel, string, TexteRouge),
+    send(JauneLabel, string, TexteJaune).
 
 % Démarrage du menu au chargement
 :- initialization(demarrer_interface).
+
+% Prédicat pour afficher les coordonnées d'un clic
+afficher_coordonnees(Position) :-
+    get(Position, x, X),
+    get(Position, y, Y),
+    format('Clic aux coordonnées: (~w, ~w)~n', [X, Y]).
