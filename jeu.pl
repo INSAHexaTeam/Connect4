@@ -2,6 +2,7 @@
 :- consult('gestion/affichage.pl').
 :- consult('gestion/joueurs.pl').
 :- consult('gestion/victoire.pl').
+:- use_module('ia/aleatoire').
 
 % Déclaration pour manipuler dynamiquement le plateau
 :- dynamic plateau_actuel/1.

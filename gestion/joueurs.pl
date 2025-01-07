@@ -1,3 +1,7 @@
+% Fichier : gestion/joueurs.pl
+
+:- use_module('../ia/aleatoire').  % Charger le module IA aléatoire
+
 % Alterner les joueurs
 changer_joueur('X', 'O').
 changer_joueur('O', 'X').
@@ -13,18 +17,11 @@ demander_colonne(Joueur, Colonne, TypeJoueur) :-
         )
     ; TypeJoueur = 'ia' ->
         writeln("L'IA réfléchit..."),
-        sleep(1),
-        choisir_colonne_ia(Colonne),
+        sleep(1),  % Délai de 1 seconde
+        choisir_colonne_ia(Colonne),  % Appel au module IA
         format("L'IA a choisi la colonne ~w.", [Colonne])
     ).
-
-
-choisir_colonne_ia(Colonne) :-
-    repeat,
-    random(1, 8, Colonne),  % Choix aléatoire entre 1 et 7
-    joueur_peut_jouer(Colonne),
-    !.
-
+    
 % Vérifie si une colonne est valide pour jouer
 joueur_peut_jouer(Colonne) :-
     plateau_actuel(Plateau),  % Récupère le plateau actuel
