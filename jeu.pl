@@ -27,7 +27,12 @@ creer_fenetre_jeu(Plateau) :-
     
     % Création des boutons avec positionnement absolu
     forall(between(1, 7, Col), (
-        new(B, button(Col, message(@prolog, jouer_colonne, Plateau, Col, 'X'))),
+        % Stocker le plateau dans une référence globale
+        nb_setval(plateau_courant, Plateau),
+        nb_setval(joueur_courant, 'X'),
+        % Modifier le message pour passer les bons paramètres
+        new(B, button(Col, message(@prolog, jouer_colonne))),
+        send(B, attribute, colonne, Col),
         send(B, size, size(20, 20)),
         X is (Col-1) * 60 + 10,
         send(BoutonsPanel, display, B, point(X, 5))
@@ -55,24 +60,66 @@ jouer_tour(Plateau, Joueur) :-
     % La logique du tour sera gérée par les événements des boutons
     true.
 
-% Gestion du clic sur une colonne
-jouer_colonne(Plateau, Colonne, Joueur) :-
+% Modifier le prédicat jouer_colonne pour utiliser les variables globales
+jouer_colonne(Colonne) :-
+    nb_getval(plateau_courant, Plateau),
+    nb_getval(joueur_courant, Joueur),
     (ajouter_pion(Plateau, Colonne, Joueur, NouveauPlateau) ->
-        mettre_a_jour_affichage(NouveauPlateau),
+        nb_setval(plateau_courant, NouveauPlateau),
+        % Afficher le plateau dans le terminal
+        nl, write('Joueur '), write(Joueur), write(' joue colonne '), write(Colonne), nl,
+        afficher_plateau(NouveauPlateau),
+        nl,
         (verifier_victoire(NouveauPlateau, Joueur) ->
             afficher_victoire(Joueur)
         ;
             changer_joueur(Joueur, ProchainJoueur),
+            nb_setval(joueur_courant, ProchainJoueur),
             mettre_a_jour_boutons(NouveauPlateau, ProchainJoueur)
         )
     ;
         send(@display, inform, 'Colonne invalide ou pleine, reessayez.')
     ).
 
+% Mettre à jour les boutons
+mettre_a_jour_boutons(Plateau, Joueur) :-
+    get(@event?receiver?device?device, member, picture, BoutonsPanel),
+    send(BoutonsPanel, clear),
+    % Recréer les boutons
+    forall(between(1, 7, Col), (
+        new(B, button(Col, message(@prolog, jouer_colonne))),
+        send(B, attribute, colonne, Col),
+        send(B, size, size(20, 20)),
+        X is (Col-1) * 60 + 10,
+        send(BoutonsPanel, display, B, point(X, 5))
+    )),
+    % Afficher le tour du joueur
+    format(atom(Message), 'Tour du joueur ~w', [Joueur]),
+    send(@display, inform, Message).
+
+% Ajouter un prédicat pour obtenir la colonne depuis le bouton
+jouer_colonne :-
+    get(@event?receiver, attribute, colonne, Colonne),
+    jouer_colonne(Colonne).
+
 % Mettre à jour l'affichage graphique
 mettre_a_jour_affichage(Plateau) :-
-    % À implémenter : mise à jour visuelle du plateau
-    true.
+    % Afficher dans le terminal
+    nl,  % Nouvelle ligne pour plus de clarté
+    write('État actuel du plateau :'), nl,
+    % Compléter les colonnes avec des variables pour les cases vides
+    completer_colonnes(Plateau, 6, PlateauComplete),
+    afficher_plateau(PlateauComplete),
+    nl.
+
+% Compléter chaque colonne avec des variables jusqu'à la hauteur désirée
+completer_colonnes([], _, []).
+completer_colonnes([Colonne|Reste], Hauteur, [ColonneComplete|ResteComplete]) :-
+    length(Colonne, Taille),
+    NbVars is Hauteur - Taille,
+    length(Vars, NbVars),
+    append(Colonne, Vars, ColonneComplete),
+    completer_colonnes(Reste, Hauteur, ResteComplete).
 
 % Afficher le message de victoire
 afficher_victoire(Joueur) :-
