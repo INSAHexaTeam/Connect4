@@ -8,8 +8,8 @@
 :- dynamic score/2.  % score(Couleur, NombreVictoires)
 
 % Initialiser les scores
-:- assertz(score(rouge, 0)),
-   assertz(score(jaune, 0)).
+:- (score(rouge, _) -> true ; assertz(score(rouge, 0))),
+   (score(jaune, _) -> true ; assertz(score(jaune, 0))).
 
 % Initialiser l'état de la dernière partie (grille vide)
 :- plateau_vide(PlateauVide),
@@ -17,21 +17,21 @@
 
 % Prédicat principal pour démarrer l'interface
 demarrer_interface :-
-    new(D, dialog('Menu - Puissance 4')),
-    send(D, name, menu),  % Donner un nom à la fenêtre pour la retrouver plus tard
-    send(D, recogniser, click_gesture(left, '', single, 
+    new(@menu, dialog('Menu - Puissance 4')),
+    send(@menu, name, menu),  % Donner un nom à la fenêtre pour la retrouver plus tard
+    send(@menu, recogniser, click_gesture(left, '', single, 
         message(@prolog, afficher_coordonnees, @event?position))),
-    send(D, gap, size(80, 40)),
-    send(D, size, size(400, 400)),
+    send(@menu, gap, size(80, 40)),
+    send(@menu, size, size(400, 400)),
 
 
     % Espace
-    send(D, append, label(space, '')),
+    send(@menu, append, label(space, '')),
     
     % Création de la grille décorative
     new(Grille, picture),
     send(Grille, size, size(195, 165)),
-    send(D, append, Grille, below), % Position relative au dernier élément
+    send(@menu, append, Grille, below), % Position relative au dernier élément
     
     % Dessin du fond bleu
     new(Fond, box(210, 180)),
@@ -80,19 +80,19 @@ demarrer_interface :-
     send(VSLabel, font, font(helvetica, bold, 12)),
     send(VBox, display, VSLabel,point(178,301)),
 
-    send(D, append, VBox),
+    send(@menu, append, VBox),
 
     %Cercle jaune
     new(Cercle, circle(12)),
     send(Cercle, center, point(230, 310)),
     send(Cercle, fill_pattern, colour(yellow)),
-    send(D, display, Cercle),
+    send(@menu, display, Cercle),
 
     %Cercle rouge
     new(Cercle2, circle(12)),
     send(Cercle2, center, point(140, 310)),
     send(Cercle2, fill_pattern, colour(red)),
-    send(D, display, Cercle2),
+    send(@menu, display, Cercle2),
 
     
 
@@ -103,8 +103,9 @@ demarrer_interface :-
     creer_bouton(VBox, 'JOUER', nouvelle_partie,point(40,350)),
     creer_bouton(VBox, 'REGLES DU JEU', afficher_regles,point(130,350)),
     creer_bouton(VBox, 'QUITTER', quitter_jeu,point(280,350)),
+    creer_bouton(VBox, 'ACTUALISER', actualiser_menu,point(180,50)),
     
-    send(D, open_centered).
+    send(@menu, open_centered).
 
 % Création d'un cercle dans la grille du menu
 creer_cercle_menu(Grille, Plateau, Ligne, Col) :-
@@ -126,6 +127,7 @@ creer_bouton(Dialog, Texte, Action,Pos) :-
 
 % Création de la grille de jeu
 nouvelle_partie :-
+    send(@menu, free),
     new(F, frame('Puissance 4')),
     nb_setval(frame_ref, F),  % Stocker la référence à la frame
     send(F, size, size(800, 650)),
@@ -192,26 +194,26 @@ quitter_jeu :-
 
 % Afficher les règles du jeu
 afficher_regles :-
-    new(D, dialog('Règles du Puissance 4')),
-    send(D, size, size(300, 200)),
+    new(@menu, dialog('Règles du Puissance 4')),
+    send(@menu, size, size(300, 200)),
     
     new(Texte, text('Règles du jeu :')),
     send(Texte, font, font(helvetica, bold, 14)),
-    send(D, append, Texte),
-    send(D, append, label(space, '')),
+    send(@menu, append, Texte),
+    send(@menu, append, label(space, '')),
     
     new(Regles, text),
     send(Regles, font, font(helvetica, normal, 12)),
     send(Regles, append, '- Les joueurs jouent tour à tour\n'),
     send(Regles, append, '- Le premier à aligner 4 jetons gagne\n'),
     send(Regles, append, '- Les jetons tombent en bas de la colonne'),
-    send(D, append, Regles),
+    send(@menu, append, Regles),
     
-    new(Bouton, button('OK', message(D, destroy))),
+    new(Bouton, button('OK', message(@menu, destroy))),
     send(Bouton, font, font(helvetica, normal, 12)),
-    send(D, append, Bouton),
+    send(@menu, append, Bouton),
     
-    send(D, open_centered).
+    send(@menu, open_centered).
 
 % Prédicat pour mettre à jour l'interface graphique
 mettre_a_jour_interface(Plateau) :-
@@ -257,41 +259,16 @@ annoncer_victoire(Joueur) :-
     retract(score(Couleur, Score)),
     assertz(score(Couleur, NouveauScore)),
     % Fermer la fenêtre de jeu
-    nb_getval(frame_ref, Frame),
-    send(Frame, destroy),
-    % Nettoyer les références
-    nb_delete(frame_ref),
-    nb_delete(grille_ref),
+    (nb_current(frame_ref, Frame) -> 
+        send(Frame, destroy),
+        nb_delete(frame_ref)
+    ; true),
+    (nb_current(grille_ref, _) -> 
+        nb_delete(grille_ref)
+    ; true),
     % Mettre à jour la grille du menu
-    mettre_a_jour_menu.
+    demarrer_interface.
 
-% Mettre à jour la grille du menu
-mettre_a_jour_menu :-
-    % Trouver la fenêtre du menu
-    get(@display, frame, menu, D),
-    % Trouver la grille dans la fenêtre
-    get(D, member, picture, Grille),
-    % Effacer le contenu actuel
-    send(Grille, clear),
-    % Redessiner le fond bleu
-    new(Fond, box(210, 180)),
-    send(Fond, fill_pattern, colour(blue)),
-    send(Grille, display, Fond),
-    % Redessiner les cercles avec le nouvel état
-    derniere_partie(Plateau),
-    forall(between(0, 5, Ligne),
-           forall(between(0, 6, Col),
-                  creer_cercle_menu(Grille, Plateau, Ligne, Col))),
-    % Mettre à jour les scores
-    get(D, member, dialog_group, ScoreBox),
-    get(ScoreBox, member, text, RougeLabel),
-    get(ScoreBox, member, text, JauneLabel),
-    score(rouge, ScoreRouge),
-    score(jaune, ScoreJaune),
-    atomic_list_concat(['Rouge : ', ScoreRouge], TexteRouge),
-    atomic_list_concat(['Jaune : ', ScoreJaune], TexteJaune),
-    send(RougeLabel, string, TexteRouge),
-    send(JauneLabel, string, TexteJaune).
 
 % Démarrage du menu au chargement
 :- initialization(demarrer_interface).
@@ -301,3 +278,17 @@ afficher_coordonnees(Position) :-
     get(Position, x, X),
     get(Position, y, Y),
     format('Clic aux coordonnées: (~w, ~w)~n', [X, Y]).
+
+% Action pour actualiser le menu
+actualiser_menu :-
+    catch(
+        (   
+            send(@menu, free),
+            % Relancer l'interface
+            demarrer_interface
+        ),
+        Error,
+        (   format('Erreur lors de l\'actualisation: ~w~n', [Error]),
+            demarrer_interface  % Relancer quand même l'interface en cas d'erreur
+        )
+    ).
