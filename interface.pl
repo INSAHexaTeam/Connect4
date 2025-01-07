@@ -150,6 +150,9 @@ nouvelle_partie :-
     send(Grille, recogniser,
         click_gesture(left, '', single,
             message(@prolog, detecter_colonne, @event?position))),
+    % Ajouter un gestionnaire pour le survol
+    send(Grille, recogniser,
+        handler(loc_move, message(@prolog, survol_colonne, @event?position, Grille))),
     send(D, append, Grille, below),
     
     % Dessin du fond bleu
@@ -168,6 +171,64 @@ nouvelle_partie :-
     nb_setval(grille_ref, Grille),
     
     send(F, open_centered).
+
+% Variable globale pour stocker la dernière colonne survolée
+:- nb_setval(derniere_colonne, -1).
+
+% Prédicat pour gérer le survol d'une colonne
+survol_colonne(Position, Grille) :-
+    % Vérifier que la grille existe toujours
+    (object(Grille) ->
+        get(Position, x, X),
+        Col is floor(X / 60),
+        % Vérifier si on a changé de colonne
+        nb_getval(derniere_colonne, DerniereCol),
+        (Col \= DerniereCol ->
+            % Restaurer la colonne précédente si elle existe
+            (DerniereCol >= 0, DerniereCol =< 6 ->
+                restaurer_colonne(Grille, DerniereCol)
+            ; true),
+            % Mettre en surbrillance la nouvelle colonne si elle est valide
+            (Col >= 0, Col =< 6 ->
+                mettre_en_surbrillance(Grille, Col),
+                nb_setval(derniere_colonne, Col)
+            ; nb_setval(derniere_colonne, -1))
+        ; true)
+    ; true).
+
+% Mettre une colonne en surbrillance
+mettre_en_surbrillance(Grille, Col) :-
+    % Vérifier que la grille existe toujours
+    object(Grille),
+    etat_jeu(Plateau, _),
+    forall(between(0, 5, Ligne),
+           (get_pion(Plateau, Ligne, Col, Pion),
+            X is Col * 60 + 30,
+            Y is Ligne * 60 + 30,
+            (Pion = ' ' ->
+                % Créer et afficher le nouveau cercle
+                new(C, circle(25)),
+                send(C, center, point(X, Y)),
+                send(C, fill_pattern, colour(grey)),
+                send(Grille, display, C)
+            ; true))).
+
+% Restaurer l'état normal d'une colonne
+restaurer_colonne(Grille, Col) :-
+    % Vérifier que la grille existe toujours
+    object(Grille),
+    etat_jeu(Plateau, _),
+    forall(between(0, 5, Ligne),
+           (get_pion(Plateau, Ligne, Col, Pion),
+            X is Col * 60 + 30,
+            Y is Ligne * 60 + 30,
+            (Pion = ' ' ->
+                % Créer et afficher le nouveau cercle
+                new(C, circle(25)),
+                send(C, center, point(X, Y)),
+                send(C, fill_pattern, colour(white)),
+                send(Grille, display, C)
+            ; true))).
 
 % Création d'un cercle dans la grille
 creer_cercle(Grille, Ligne, Col) :-
