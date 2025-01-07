@@ -1,7 +1,9 @@
 :- use_module(library(pce)).
+:- [jeu].
 
 % Prédicat principal pour démarrer l'interface
 demarrer_interface :-
+    % [jeu].  % Sans extension .pl
     new(D, dialog('Menu - Puissance 4')),
     send(D, gap, size(20, 20)),
     send(D, size, size(400, 300)),
@@ -30,48 +32,7 @@ creer_bouton(Dialog, Texte, Action) :-
 
 % Création de la grille de jeu
 nouvelle_partie :-
-    new(F, frame('Puissance 4')),
-    send(F, size, size(800, 650)),
-    
-    new(D, dialog),
-    send(F, append, D),
-    
-    % Création des boutons pour chaque colonne dans un dialog horizontal
-    new(BoutonsPanel, picture),
-    send(BoutonsPanel, size, size(440, 50)),
-    % send(BoutonsPanel, gap, size(0, 0)),
-    % send(BoutonsPanel, background, colour(yellow)),
-    send(D, append, BoutonsPanel),
-    
-    % Création d'un panel pour contenir les boutons
-    % new(ButtonBox, box(440, 50)),
-    % send(ButtonBox, fill_pattern, colour(yellow)),
-    % send(BoutonsPanel, display, ButtonBox),
-    
-    % Création des boutons avec positionnement absolu
-    forall(between(1, 7, Col), (
-        new(B, button(Col, message(@prolog, jouer_colonne, Col))),
-        send(B, size, size(20, 20)),          % Boutons plus grands
-        X is (Col-1) * 60 + 10,              % Ajustement de l'espacement
-        send(BoutonsPanel, display  , B, point(X, 5))
-    )),
-    
-    % Création de la grille visuelle (6x7)
-    new(Grille, picture),
-    send(Grille, size, size(420, 360)),
-    send(D, append, Grille, below),
-    
-    % Dessin du fond bleu
-    new(Fond, box(420, 360)),
-    send(Fond, fill_pattern, colour(blue)),
-    send(Grille, display, Fond),
-    
-    % Création des cercles
-    forall(between(0, 5, Ligne),
-           forall(between(0, 6, Col),
-                  creer_cercle(Grille, Ligne, Col))),
-    
-    send(F, open_centered).
+    jouer.  % Appel direct du prédicat jouer du fichier jeu.pl
 
 % Création d'un cercle dans la grille
 creer_cercle(Grille, Ligne, Col) :-
