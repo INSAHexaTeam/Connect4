@@ -1,44 +1,60 @@
-% Fichier : gestion/joueurs.pl
+:- module(joueurs, [
+    joueur_peut_jouer/1, 
+    demander_colonne/3, 
+    changer_joueur/2
+]).
 
-:- use_module('../ia/aleatoire').  % Charger le module IA aléatoire
-
-% Alterner les joueurs
+% Alterne entre les joueurs X et O
 changer_joueur('X', 'O').
 changer_joueur('O', 'X').
 
-% Demander une colonne
+% Demande à un joueur (humain ou IA) de choisir une colonne
 demander_colonne(Joueur, Colonne, TypeJoueur) :-
     (TypeJoueur = 'humain' ->
-        format("Joueur ~w, choisissez une colonne (1-7) : ", [Joueur]),
-        catch(read(Input), _, Input = invalide),
-        (integer(Input), between(1, 7, Input) -> Colonne = Input;
-            writeln("Entrée invalide, veuillez choisir un numéro entre 1 et 7."),
-            demander_colonne(Joueur, Colonne, TypeJoueur)
-        )
-    ; TypeJoueur = 'ia' ->
-        writeln("L'IA réfléchit..."),
-        sleep(1),  % Délai de 1 seconde
-        choisir_colonne_ia(Colonne),  % Appel au module IA
-        format("L'IA a choisi la colonne ~w.", [Colonne])
+        demander_colonne_humain(Joueur, Colonne)
+    ; TypeJoueur = 'ia_aleatoire' ->
+        demander_colonne_ia_aleatoire(Joueur, Colonne)
+    ; TypeJoueur = 'ia_minimax' ->
+        demander_colonne_ia_minimax(Joueur, Colonne)
+    ; writeln("[ERREUR] Type de joueur non reconnu : "),
+      writeln(TypeJoueur),
+      fail).
+
+% Gestion du choix pour un joueur humain
+demander_colonne_humain(Joueur, Colonne) :-
+    format("Joueur ~w, choisissez une colonne (1-7 ou 'stop' pour arrêter) : ", [Joueur]),
+    catch(read(Input), _, Input = invalide),
+    (Input = stop ->
+        writeln("Partie arrêtée."),
+        halt  % Arrête le programme
+    ; integer(Input), between(1, 7, Input) ->
+        Colonne = Input
+    ;
+        writeln("Entrée invalide, veuillez choisir un numéro entre 1 et 7 ou 'stop'."),
+        demander_colonne_humain(Joueur, Colonne)
     ).
-    
+
+% Gestion du choix pour une IA aléatoire
+demander_colonne_ia_aleatoire(Joueur, Colonne) :-
+    writeln('L IA (aléatoire) réfléchit...'),
+    sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
+    aleatoire:choisir_colonne_ia(Colonne),  % Appel au module aléatoire
+    format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne]).
+
+% Gestion du choix pour une IA utilisant Minimax
+demander_colonne_ia_minimax(Joueur, Colonne) :-
+    writeln("L'IA (Minimax) réfléchit..."),
+    sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
+    plateau_actuel(Plateau),  % Récupère le plateau actuel
+    (minimax:choisir_colonne_minimax(Plateau, Colonne) ->
+        format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
+    ;
+        writeln('[ERREUR] L IA n a pas pu jouer : aucun mouvement possible.'),
+        fail).
+
 % Vérifie si une colonne est valide pour jouer
 joueur_peut_jouer(Colonne) :-
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     nth1(Colonne, Plateau, ListeColonne),
     length(ListeColonne, Taille),
-    Taille < 6. 
-
-
-ajouter_pion(Plateau, Colonne, Joueur, NouveauPlateau) :-
-    nth1(Colonne, Plateau, ListeColonne),
-    length(ListeColonne, Taille), Taille < 6, 
-    append(ListeColonne, [Joueur], NouvelleColonne),
-    remplacer_colonne(Plateau, Colonne, NouvelleColonne, NouveauPlateau).
-
-
-remplacer_colonne([_|T], 1, NouvelleColonne, [NouvelleColonne|T]).
-remplacer_colonne([H|T], Colonne, NouvelleColonne, [H|R]) :-
-    Colonne > 1,
-    Colonne1 is Colonne - 1,
-    remplacer_colonne(T, Colonne1, NouvelleColonne, R).
+    Taille < 6.  % La colonne est valide si elle contient moins de 6 pions
