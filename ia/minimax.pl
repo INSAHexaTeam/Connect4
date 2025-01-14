@@ -1,95 +1,141 @@
-:- module(minimax, [choisir_colonne_minimax/2, simuler_coup/4]).
-:- use_module('../gestion/joueurs', [joueur_peut_jouer/1, changer_joueur/2]).
-:- use_module('../ia/heuristique'). % Import des fonctions d'évaluation
+:- module(minimax, [choisir_colonne_minimax/2]).
 
+:- use_module('../gestion/joueurs', [joueur_peut_jouer/1, changer_joueur/2]).
 % Profondeur maximale pour la recherche Minimax
 profondeur_max(4). % Ajustez la profondeur selon vos besoins
 
-% Choix d'une colonne par l'IA utilisant Minimax
-choisir_colonne_minimax(Plateau, Colonne) :-
-    writeln("[DEBUG] Début de choisir_colonne_minimax."),
-    profondeur_max(ProfondeurMax),
-    mouvements_possibles(Plateau, Mouvements),
-    writeln("[DEBUG] Colonnes jouables pour Minimax : "), writeln(Mouvements),
-    (Mouvements = [] ->
-        writeln("[ERREUR] Aucun mouvement possible."),
-        fail
-    ;
-        minimax(Plateau, 'O', ProfondeurMax, -inf, inf, _, Colonne),
-        format("[DEBUG] Minimax a choisi la colonne : ~w\n", [Colonne])
-    ).
 
-% Minimax : recherche récursive avec élagage alpha-bêta
-minimax(Plateau, Joueur, 0, _, _, Score, _) :-
-    evaluer_plateau(Plateau, Joueur, Score), % Évalue le plateau pour le joueur
-    format("[DEBUG] Évaluation à profondeur 0. Score : ~w\n", [Score]),
+% Utilite, determine la valeur d'une position donnée sur le plateau
+utilite(Plateau, Utilite) :-
+    victoire(Plateau, 'X'), % Si le joueur 'x' gagne
+    Utilite = -1, !.
+
+utilite(Plateau, Utilite) :-
+    victoire(Plateau, 'O'), % Si l'IA gagne
+    Utilite = 1, !.
+
+utilite(Plateau, Utilite) :-
+    Utilite = 0. % Si la partie est nulle
+
+
+
+% Cas de base (profondeur = 0) : choix aléatoire d'une colonne
+% Profondeur : profondeur de recherche restante
+% Plateau : état du plateau de jeu
+% Joueur : joueur courant
+% Position : colonne choisie
+% Utilite : utilité de la position choisie
+minimax(Profondeur, Plateau, Joueur, Position, Utilite) :-
+    case_vide(Plateau, Position), % Vérifier que la colonne n'est pas pleine
+    random(0, 7, Position), % Choisir une colonne aléatoire
     !.
-minimax(Plateau, Joueur, Profondeur, Alpha, Beta, MeilleurScore, MeilleureColonne) :-
-    Profondeur > 0,
-    mouvements_possibles(Plateau, Mouvements),
-    (Mouvements = [] -> % Aucun mouvement possible
-        MeilleurScore = 0,
-        MeilleureColonne = -1,
-        writeln("[DEBUG] Aucun mouvement possible à cette profondeur.")
-    ;
-        explorer_mouvements(Mouvements, Plateau, Joueur, Profondeur, Alpha, Beta, -inf, MeilleurScore, MeilleureColonne)
-    ).
 
-% Exploration des mouvements possibles
-explorer_mouvements([], _, _, _, _, _, MeilleurScore, MeilleurScore, _) :- !.
-explorer_mouvements([Col|Cols], Plateau, Joueur, Profondeur, Alpha, Beta, ScoreCourant, MeilleurScore, MeilleureColonne) :-
-    (simuler_coup(Plateau, Col, Joueur, NouveauPlateau) ->
-        changer_joueur(Joueur, Adversaire),
-        Profondeur1 is Profondeur - 1,
-        minimax(NouveauPlateau, Adversaire, Profondeur1, Alpha, Beta, ScoreAdversaire, _),
-        ScoreActuel is -ScoreAdversaire, % Inverse le score pour minimiser l'adversaire
-        format("[DEBUG] Colonne ~w, Score obtenu : ~w\n", [Col, ScoreActuel]),
-        (ScoreActuel > ScoreCourant ->
-            NouveauScore = ScoreActuel,
-            NouvelleMeilleureColonne = Col
-        ;
-            NouveauScore = ScoreCourant,
-            NouvelleMeilleureColonne = MeilleureColonne
-        ),
-        % Élagage alpha-bêta
-        (NouveauScore >= Beta ->
-            MeilleurScore = NouveauScore,
-            MeilleureColonne = NouvelleMeilleureColonne,
-            writeln("[DEBUG] Coupure alpha-bêta."),
-            !
-        ;
-            max(Alpha, NouveauScore, Alpha1),
-            explorer_mouvements(Cols, Plateau, Joueur, Profondeur, Alpha1, Beta, NouveauScore, MeilleurScore, NouvelleMeilleureColonne)
-        )
-    ;
-        % Si le coup échoue, passe au suivant
-        writeln("[DEBUG] Simulation échouée pour la colonne : "), writeln(Col),
-        explorer_mouvements(Cols, Plateau, Joueur, Profondeur, Alpha, Beta, ScoreCourant, MeilleurScore, MeilleureColonne)
-    ).
+% Cas général : recherche Minimax
+minimax(Profondeur, Plateau, Joueur, Position, Utilite) :-
+    NouvelleProfondeur is Profondeur + 1,
+    coups_possibles(Plateau, ListeCoups), % Lister les coups possibles
+    !,
+    meilleur_coup(NouvelleProfondeur, Plateau, Joueur, ListeCoups, Position, Utilite). % Déterminer le meilleur coup possible pour l'IA
+    !.
 
-% Génération des colonnes jouables
-mouvements_possibles(Plateau, Mouvements) :-
-    findall(Col, 
-        (between(1, 7, Col), joueur_peut_jouer(Col)),
-        Mouvements).
 
-% Simulation d'un coup (ajout d'un pion dans une colonne)
-simuler_coup(Plateau, Colonne, Joueur, NouveauPlateau) :-
-    nth1(Colonne, Plateau, ListeColonne),
-    length(ListeColonne, Taille),
-    (Taille < 6 ->
-        append(ListeColonne, [Joueur], NouvelleColonne),
-        remplacer_colonne(Plateau, Colonne, NouvelleColonne, NouveauPlateau)
-    ;
-        fail % Colonne pleine
-    ).
+% Si aucun coup n'est possible, la valeur minimax est l'utilité de la position actuelle
+minimax(Profondeur, Plateau, Joueur, Position, Utilite) :-
+    utilite(Plateau, Utilite).
 
-% Remplacement d'une colonne dans le plateau
-remplacer_colonne([_|T], 1, NouvelleColonne, [NouvelleColonne|T]) :- !.
-remplacer_colonne([H|T], N, NouvelleColonne, [H|R]) :-
-    N > 1, N1 is N - 1,
-    remplacer_colonne(T, N1, NouvelleColonne, R).
 
-% Calcul du maximum entre deux valeurs
-max(A, B, Max) :-
-    (A >= B -> Max = A ; Max = B).
+% Déterminer le meilleur coup possible pour l'IA
+meilleur_coup(Profondeur, Plateau, Joueur, [Coups|ListeCoups], Position, Utilite) :-
+    appliquer_coup(Plateau, Coups, Joueur, NouveauPlateau), % Appliquer le coup
+    changer_joueur(Joueur, NouveauJoueur), % Changer de joueur
+    !, % Arrêter la recherche si un coup gagnant est trouvé
+    minimax(Profondeur, NouveauPlateau, NouveauJoueur, _Position, Utilite), % Rechercher le meilleur coup pour l'autre joueur
+    meilleur_coup(Profondeur, Plateau, Joueur, ListeCoups, _, MeilleurUtilite), % Rechercher le meilleur coup pour l'IA
+    afficher_valeur(Profondeur, Coup, Utilite), % Afficher la valeur du coup - pas forcement utile
+    choisir_meilleur_coup(Joueur, Utilite, Coup, MeilleurUtilite, Coups, Position, Utilite). % Choisir le meilleur coup
+
+
+
+%.......................................
+% choisir_meilleur_coup
+%.......................................
+% Retourne le meilleur coup entre deux en fonction de leurs valeurs d'utilité respectives.
+%
+% Si les deux coups ont la même valeur, l'un est choisi aléatoirement.
+
+choisir_meilleur_coup(Profondeur,Joueur,Coup1,Utilite1,Coup2,Utilite2,Position,Utilite) :-
+    maximiser(Joueur),                      %%% Si le joueur maximise
+    Utilite1 > Utilite2,                    %%% alors une valeur plus grande est meilleure.
+    Position = Coup1,
+    Utilite = Utilite1,
+    !
+    .
+
+choisir_meilleur_coup(Profondeur,Joueur,Coup1,Utilite1,Coup2,Utilite2,Position,Utilite) :-
+    minimiser(Joueur),                      %%% Si le joueur minimise,
+    Utilite1 < Utilite2,                    %%% alors une valeur plus petite est meilleure.
+    Position = Coup1,
+    Utilite = Utilite1, 
+    !.
+
+choisir_meilleur_coup(Profondeur,Joueur,Coup1,Utilite1,Coup2,Utilite2,Position,Utilite) :-
+    Utilite1 == Utilite2,                   %%% Si les coups ont la même valeur,
+    probabilite_aleatoire(10,Random),       %%% alors en choisir un au hasard
+    choisir_egalite(Profondeur,Random,Joueur,Coup1,Utilite1,Coup2,Utilite2,Position,Utilite),    
+    !. 
+
+choisir_meilleur_coup(Profondeur,Joueur,Coup1,Utilite1,Coup2,Utilite2,Position,Utilite) :-  
+    Position = Coup2,
+    Utilite = Utilite2,
+    !.
+
+
+%.......................................
+% choisir_egalite
+%.......................................
+% Sélectionne au hasard entre deux coups de même utilité selon une probabilité
+%
+
+choisir_egalite(Profondeur,Random,Joueur,Coup1,Utilite1,Coup2,Utilite2,Position,Utilite) :-
+    Random < 6,
+    Position = Coup1,
+    Utilite = Utilite1, 
+    !.
+
+choisir_egalite(Profondeur,Random,Joueur,Coup1,Utilite1,Coup2,Utilite2,Position,Utilite) :-
+    Position = Coup2,
+    Utilite = Utilite2,
+    !.
+
+% choisir_colonne_minimax(+Joueur, -Colonne)
+% Détermine la meilleure colonne à jouer pour l'IA Minimax
+choisir_colonne_minimax(Joueur, Colonne) :-
+    % Récupère le plateau actuel
+    plateau_actuel(Plateau),
+    % Définit la profondeur maximale
+    profondeur_max(ProfondeurMax),
+    % Liste les colonnes jouables
+    findall(C, joueur_peut_jouer(C), ColonnesJouables),
+    % Parcourt toutes les colonnes jouables et applique minimax pour chaque
+    trouver_meilleure_colonne(ProfondeurMax, Plateau, Joueur, ColonnesJouables, Colonne).
+
+% trouver_meilleure_colonne(+Profondeur, +Plateau, +Joueur, +Colonnes, -MeilleureColonne)
+% Parcourt les colonnes jouables pour trouver la meilleure selon minimax
+trouver_meilleure_colonne(Profondeur, Plateau, Joueur, Colonnes, MeilleureColonne) :-
+    maplist(minimax_colonne(Profondeur, Plateau, Joueur), Colonnes, Resultats),
+    % Trouve la colonne avec la meilleure utilité
+    max_member((UtiliteMax, MeilleureColonne), Resultats).
+
+% minimax_colonne(+Profondeur, +Plateau, +Joueur, +Colonne, -Resultat)
+% Applique minimax pour une colonne donnée
+minimax_colonne(Profondeur, Plateau, Joueur, Colonne, (Utilite, Colonne)) :-
+    appliquer_coup(Plateau, Colonne, Joueur, NouveauPlateau),
+    changer_joueur(Joueur, Adversaire),
+    minimax(Profondeur, NouveauPlateau, Adversaire, _, Utilite).
+
+% appliquer_coup(+Plateau, +Colonne, +Joueur, -NouveauPlateau)
+% Simule un coup dans une colonne donnée
+appliquer_coup(Plateau, Colonne, Joueur, NouveauPlateau) :-
+    nth1(Colonne, Plateau, ColonneActuelle),
+    append(ColonneActuelle, [Joueur], NouvelleColonne),
+    nth1(Colonne, NouveauPlateau, NouvelleColonne, Plateau).
