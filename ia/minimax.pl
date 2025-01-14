@@ -1,95 +1,58 @@
-:- module(minimax, [choisir_colonne_minimax/2, simuler_coup/4]).
-:- use_module('../gestion/joueurs', [joueur_peut_jouer/1, changer_joueur/2]).
-:- use_module('../ia/heuristique'). % Import des fonctions d'évaluation
+% File: ia/minimax.pl
 
-% Profondeur maximale pour la recherche Minimax
-profondeur_max(4). % Ajustez la profondeur selon vos besoins
+:- module(minimax, [simuler_coup/4, choisir_colonne_minimax/2]).
 
-% Choix d'une colonne par l'IA utilisant Minimax
-choisir_colonne_minimax(Plateau, Colonne) :-
-    writeln("[DEBUG] Début de choisir_colonne_minimax."),
-    profondeur_max(ProfondeurMax),
-    mouvements_possibles(Plateau, Mouvements),
-    writeln("[DEBUG] Colonnes jouables pour Minimax : "), writeln(Mouvements),
-    (Mouvements = [] ->
-        writeln("[ERREUR] Aucun mouvement possible."),
-        fail
-    ;
-        minimax(Plateau, 'O', ProfondeurMax, -inf, inf, _, Colonne),
-        format("[DEBUG] Minimax a choisi la colonne : ~w\n", [Colonne])
-    ).
+% Import joueur_peut_jouer/1 from the joueurs module
+:- use_module('../gestion/joueurs', [joueur_peut_jouer/1]).
 
-% Minimax : recherche récursive avec élagage alpha-bêta
-minimax(Plateau, Joueur, 0, _, _, Score, _) :-
-    evaluer_plateau(Plateau, Joueur, Score), % Évalue le plateau pour le joueur
-    format("[DEBUG] Évaluation à profondeur 0. Score : ~w\n", [Score]),
-    !.
-minimax(Plateau, Joueur, Profondeur, Alpha, Beta, MeilleurScore, MeilleureColonne) :-
-    Profondeur > 0,
-    mouvements_possibles(Plateau, Mouvements),
-    (Mouvements = [] -> % Aucun mouvement possible
-        MeilleurScore = 0,
-        MeilleureColonne = -1,
-        writeln("[DEBUG] Aucun mouvement possible à cette profondeur.")
-    ;
-        explorer_mouvements(Mouvements, Plateau, Joueur, Profondeur, Alpha, Beta, -inf, MeilleurScore, MeilleureColonne)
-    ).
-
-% Exploration des mouvements possibles
-explorer_mouvements([], _, _, _, _, _, MeilleurScore, MeilleurScore, _) :- !.
-explorer_mouvements([Col|Cols], Plateau, Joueur, Profondeur, Alpha, Beta, ScoreCourant, MeilleurScore, MeilleureColonne) :-
-    (simuler_coup(Plateau, Col, Joueur, NouveauPlateau) ->
-        changer_joueur(Joueur, Adversaire),
-        Profondeur1 is Profondeur - 1,
-        minimax(NouveauPlateau, Adversaire, Profondeur1, Alpha, Beta, ScoreAdversaire, _),
-        ScoreActuel is -ScoreAdversaire, % Inverse le score pour minimiser l'adversaire
-        format("[DEBUG] Colonne ~w, Score obtenu : ~w\n", [Col, ScoreActuel]),
-        (ScoreActuel > ScoreCourant ->
-            NouveauScore = ScoreActuel,
-            NouvelleMeilleureColonne = Col
-        ;
-            NouveauScore = ScoreCourant,
-            NouvelleMeilleureColonne = MeilleureColonne
-        ),
-        % Élagage alpha-bêta
-        (NouveauScore >= Beta ->
-            MeilleurScore = NouveauScore,
-            MeilleureColonne = NouvelleMeilleureColonne,
-            writeln("[DEBUG] Coupure alpha-bêta."),
-            !
-        ;
-            max(Alpha, NouveauScore, Alpha1),
-            explorer_mouvements(Cols, Plateau, Joueur, Profondeur, Alpha1, Beta, NouveauScore, MeilleurScore, NouvelleMeilleureColonne)
-        )
-    ;
-        % Si le coup échoue, passe au suivant
-        writeln("[DEBUG] Simulation échouée pour la colonne : "), writeln(Col),
-        explorer_mouvements(Cols, Plateau, Joueur, Profondeur, Alpha, Beta, ScoreCourant, MeilleurScore, MeilleureColonne)
-    ).
-
-% Génération des colonnes jouables
-mouvements_possibles(Plateau, Mouvements) :-
-    findall(Col, 
-        (between(1, 7, Col), joueur_peut_jouer(Col)),
-        Mouvements).
-
-% Simulation d'un coup (ajout d'un pion dans une colonne)
+% Simulate a move on the board
+% simuler_coup(+Plateau, +Colonne, +Joueur, -NouveauPlateau)
 simuler_coup(Plateau, Colonne, Joueur, NouveauPlateau) :-
-    nth1(Colonne, Plateau, ListeColonne),
-    length(ListeColonne, Taille),
-    (Taille < 6 ->
-        append(ListeColonne, [Joueur], NouvelleColonne),
-        remplacer_colonne(Plateau, Colonne, NouvelleColonne, NouveauPlateau)
-    ;
-        fail % Colonne pleine
-    ).
+    nth1(Colonne, Plateau, Col),
+    append(Col, [Joueur], NouvelleCol),
+    remplacer_colonne(Plateau, Colonne, NouvelleCol, NouveauPlateau).
 
-% Remplacement d'une colonne dans le plateau
-remplacer_colonne([_|T], 1, NouvelleColonne, [NouvelleColonne|T]) :- !.
-remplacer_colonne([H|T], N, NouvelleColonne, [H|R]) :-
-    N > 1, N1 is N - 1,
-    remplacer_colonne(T, N1, NouvelleColonne, R).
+% Replace a column in the board
+% remplacer_colonne(+Plateau, +Colonne, +NouvelleCol, -NouveauPlateau)
+remplacer_colonne(Plateau, Colonne, NouvelleCol, NouveauPlateau) :-
+    nth1(Colonne, Plateau, _, Rest),
+    nth1(Colonne, NouveauPlateau, NouvelleCol, Rest).
 
-% Calcul du maximum entre deux valeurs
-max(A, B, Max) :-
-    (A >= B -> Max = A ; Max = B).
+% Minimax logic: choose the optimal column
+% choisir_colonne_minimax(+Plateau, -Colonne)
+choisir_colonne_minimax(Plateau, Colonne) :-
+    minimax(Plateau, 3, true, _, Colonne).  % Depth of 3
+
+% Minimax algorithm
+% minimax(+Plateau, +Profondeur, +MaximizingPlayer, -MeilleurScore, -MeilleurCoup)
+minimax(Plateau, 0, _, Score, _) :-
+    evaluer_plateau(Plateau, Score).  % Base case: evaluate the board
+
+minimax(Plateau, Profondeur, true, MeilleurScore, MeilleurCoup) :-
+    findall(Coup, joueur_peut_jouer(Coup), Coups),  % Use joueur_peut_jouer/1 from joueurs module
+    Profondeur1 is Profondeur - 1,
+    maplist(minimax_score(Plateau, Profondeur1, false), Coups, Scores),
+    max_list(Scores, MeilleurScore),
+    nth0(Index, Scores, MeilleurScore),
+    nth0(Index, Coups, MeilleurCoup).
+
+minimax(Plateau, Profondeur, false, MeilleurScore, MeilleurCoup) :-
+    findall(Coup, joueur_peut_jouer(Coup), Coups),  % Use joueur_peut_jouer/1 from joueurs module
+    Profondeur1 is Profondeur - 1,
+    maplist(minimax_score(Plateau, Profondeur1, true), Coups, Scores),
+    min_list(Scores, MeilleurScore),
+    nth0(Index, Scores, MeilleurScore),
+    nth0(Index, Coups, MeilleurCoup).
+
+% Helper: calculate the score for a move
+% minimax_score(+Plateau, +Profondeur, +MaximizingPlayer, +Coup, -Score)
+minimax_score(Plateau, Profondeur, MaximizingPlayer, Coup, Score) :-
+    simuler_coup(Plateau, Coup, _, NouveauPlateau),
+    minimax(NouveauPlateau, Profondeur, MaximizingPlayer, Score, _).
+
+% Evaluate the board
+% evaluer_plateau(+Plateau, -Score)
+evaluer_plateau(Plateau, Score) :-
+    (verifier_victoire(Plateau, 'X') -> Score = 100 ;  % AI win
+     verifier_victoire(Plateau, 'O') -> Score = -100 ;  % Opponent win
+     Score = 0).  % Neutral
