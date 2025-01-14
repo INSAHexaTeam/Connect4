@@ -2,6 +2,7 @@
 :- consult('gestion/affichage.pl').
 :- consult('gestion/joueurs.pl').
 :- consult('gestion/victoire.pl').
+:- consult('gestion/ia.pl').
 :- use_module(library(pce)).
 
 % État du jeu
@@ -23,15 +24,39 @@ demarrer_jeu :-
 % Jouer un coup depuis l'interface
 jouer_coup_interface(Colonne) :-
     etat_jeu(Plateau, Joueur),
-    (ajouter_pion(Plateau, Colonne, Joueur, NouveauPlateau) ->
-        retract(etat_jeu(Plateau, Joueur)),
-        changer_joueur(Joueur, ProchainJoueur),
-        assertz(etat_jeu(NouveauPlateau, ProchainJoueur)),
+    (Joueur = 'X' ->
+        % Tour du joueur humain (rouge)
+        (ajouter_pion(Plateau, Colonne, Joueur, NouveauPlateau) ->
+            retract(etat_jeu(Plateau, Joueur)),
+            assertz(etat_jeu(NouveauPlateau, 'O')),
+            mettre_a_jour_interface(NouveauPlateau),
+            mettre_a_jour_indicateur_tour('O'),
+            (verifier_victoire(NouveauPlateau, Joueur) ->
+                annoncer_victoire(Joueur)
+            ; 
+                % Forcer l'exécution du tour de l'IA immédiatement
+                call(jouer_tour_ia)
+            )
+        ; 
+            send(@display, inform, 'Coup invalide !')
+        )
+    ; true).
+
+% Tour de l'IA modifié pour être plus robuste
+jouer_tour_ia :-
+    etat_jeu(Plateau, 'O'),
+    % Ajouter un petit délai pour que le coup de l'IA soit visible
+    sleep(0.5),
+    % S'assurer que l'IA trouve un coup valide
+    (jouer_coup_ia(Plateau, NouveauPlateau) ->
+        retract(etat_jeu(Plateau, 'O')),
+        assertz(etat_jeu(NouveauPlateau, 'X')),
         mettre_a_jour_interface(NouveauPlateau),
-        mettre_a_jour_indicateur_tour(ProchainJoueur),
-        (verifier_victoire(NouveauPlateau, Joueur) ->
-            annoncer_victoire(Joueur)
+        mettre_a_jour_indicateur_tour('X'),
+        (verifier_victoire(NouveauPlateau, 'O') ->
+            annoncer_victoire('O')
         ; true)
-    ; 
-        send(@display, inform, 'Coup invalide !')
+    ;
+        % En cas d'échec de l'IA, afficher un message d'erreur
+        send(@display, inform, 'Erreur: L\'IA n\'a pas pu jouer !')
     ).
