@@ -4,6 +4,8 @@
     changer_joueur/2
 ]).
 
+:- use_module('../ia/minimax_poids_colonnes', [choisir_colonne_minimax_poids_colonnes/2]).
+
 % Alterne entre les joueurs X et O
 changer_joueur('X', 'O').
 changer_joueur('O', 'X').
@@ -16,6 +18,8 @@ demander_colonne(Joueur, Colonne, TypeJoueur) :-
         demander_colonne_ia_aleatoire(Joueur, Colonne)
     ; TypeJoueur = 'ia_minimax' ->
         demander_colonne_ia_minimax(Joueur, Colonne)
+    ; TypeJoueur = 'ia_minimax_poids_colonnes' ->
+        demander_colonne_ia_minimax_poids_colonnes(Joueur, Colonne)
     ; writeln("[ERREUR] Type de joueur non reconnu : "),
       writeln(TypeJoueur),
       fail).
@@ -47,6 +51,17 @@ demander_colonne_ia_minimax(Joueur, Colonne) :-
     sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax:choisir_colonne_minimax(Plateau, Colonne) ->
+        format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
+    ;
+        writeln('[ERREUR] L IA n a pas pu jouer : aucun mouvement possible.'),
+        fail).
+
+% Gestion du choix pour une IA utilisant Minimax avec poids des colonnes
+demander_colonne_ia_minimax_poids_colonnes(Joueur, Colonne) :-
+    writeln("L'IA (Minimax - Poids des colonnes) réfléchit..."),
+    sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
+    plateau_actuel(Plateau),  % Récupère le plateau actuel
+    (minimax_poids_colonnes:choisir_colonne_minimax_poids_colonnes(Plateau, Colonne) ->
         format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
     ;
         writeln('[ERREUR] L IA n a pas pu jouer : aucun mouvement possible.'),
