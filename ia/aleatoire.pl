@@ -1,6 +1,7 @@
 % Fichier : ia/aleatoire.pl
 
 :- module(aleatoire, [choisir_colonne_ia/1]).
+:- module(aleatoire, [joueur_peut_jouer/1]).
 
 % IA : choisir une colonne aléatoire valide
 choisir_colonne_ia(Colonne) :-

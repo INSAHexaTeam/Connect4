@@ -1,10 +1,13 @@
 :- use_module(library(pce)).
 :- encoding(utf8).
-:- consult('jeu.pl').  % Charger le fichier jeu.pl
 
-% Charger les modules d'IA
-:- use_module('ia/aleatoire').
-:- use_module('ia/minimax').
+% Charger tous les fichiers nécessaires
+:- consult('jeu.pl').
+
+:- consult('gestion/joueurs.pl').
+:- consult('gestion/ia.pl').
+:- consult('ia/aleatoire.pl').
+:- consult('ia/minimax.pl').
 
 % État de la dernière partie (pour l'affichage décoratif)
 :- dynamic derniere_partie/1.
