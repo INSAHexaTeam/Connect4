@@ -2,6 +2,10 @@
 :- encoding(utf8).
 :- consult('jeu.pl').  % Charger le fichier jeu.pl
 
+% Charger les modules d'IA
+:- use_module('ia/aleatoire').
+:- use_module('ia/minimax').
+
 % État de la dernière partie (pour l'affichage décoratif)
 :- dynamic derniere_partie/1.
 % Compteurs de victoires
@@ -102,16 +106,18 @@ demarrer_interface :-
     send(Cercle2, fill_pattern, colour(red)),
     send(@menu, display, Cercle2),
 
-    
-
-
-
+    % Ajout du sélecteur d'IA avant les boutons
+    new(SelecteurIA, menu('IA', cycle)),
+    send(SelecteurIA, append, aleatoire),
+    send(SelecteurIA, append, minmax),
+    send(SelecteurIA, default, aleatoire),
+    send(VBox, display, SelecteurIA, point(280, 60)),
+    nb_setval(selecteur_ia, SelecteurIA),
 
     % Boutons du menu
     creer_bouton(VBox, 'JOUER', nouvelle_partie,point(40,350)),
     creer_bouton(VBox, 'REGLES DU JEU', afficher_regles,point(130,350)),
     creer_bouton(VBox, 'QUITTER', quitter_jeu,point(280,350)),
-    creer_bouton(VBox, 'ACTUALISER', actualiser_menu,point(180,50)),
     
     send(@menu, open_centered).
 
@@ -135,15 +141,20 @@ creer_bouton(Dialog, Texte, Action,Pos) :-
 
 % Création de la grille de jeu
 nouvelle_partie :-
+    % Récupérer le choix de l'IA avant de fermer le menu
+    nb_getval(selecteur_ia, SelecteurIA),
+    get(SelecteurIA, selection, TypeIA),
+    nb_setval(type_ia, TypeIA),  % Stocker le type d'IA pour la partie
+    
     send(@menu, free),
     new(F, frame('Puissance 4')),
-    nb_setval(frame_ref, F),  % Stocker la référence à la frame
+    nb_setval(frame_ref, F),
     send(F, size, size(800, 650)),
     
     new(D, dialog),
     send(F, append, D),
 
-     % Création de l'indicateur de tour
+    % Création de l'indicateur de tour
     new(TourBox, dialog_group('')),
     send(TourBox, size, size(420, 40)),
     send(D, append, TourBox),
@@ -161,6 +172,17 @@ nouvelle_partie :-
     
     % Stocker la référence à l'indicateur
     nb_setval(cercle_tour, Indicateur),
+
+    % Ajout de l'indicateur du type d'IA
+    new(IABox, dialog_group('')),
+    send(IABox, size, size(420, 30)),
+    send(D, append, IABox),
+    
+    % Texte pour l'IA
+    atomic_list_concat(['IA: ', TypeIA], TexteIA),
+    new(IALabel, text(TexteIA)),
+    send(IALabel, font, font(helvetica, bold, 12)),
+    send(IABox, display, IALabel, point(180, 5)),
     
     % Création de la grille visuelle (6x7)
     new(Grille, picture),
@@ -173,19 +195,6 @@ nouvelle_partie :-
     send(Grille, recogniser,
         handler(loc_move, message(@prolog, survol_colonne, @event?position, Grille))),
     send(D, append, Grille, below),
-    
-    % % Ajout de l'indicateur de tour
-    % new(TourLabel, text('Tour du joueur:')),
-    % send(TourLabel, font, font(helvetica, bold, 14)),
-    % send(D, append, TourLabel),
-    
-    % % Cercle indicateur de tour
-    % new(CercleTour, circle(20)),
-    % send(CercleTour, fill_pattern, colour(red)),  % Le rouge commence toujours
-    % nb_setval(cercle_tour, CercleTour),  % Stocker la référence pour les mises à jour
-    % send(D, append, CercleTour),
-
-   
     
     % Dessin du fond bleu
     new(Fond, box(420, 360)),

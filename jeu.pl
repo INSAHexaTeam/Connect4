@@ -60,3 +60,19 @@ jouer_tour_ia :-
         % En cas d'échec de l'IA, afficher un message d'erreur
         send(@display, inform, 'Erreur: L\'IA n\'a pas pu jouer !')
     ).
+
+% Jouer un coup de l'IA
+jouer_coup_ia :-
+    nb_getval(type_ia, TypeIA),
+    etat_jeu(Plateau, _),
+    (TypeIA = minmax ->
+        choisir_colonne_minimax(Plateau, Colonne)
+    ;   % Si aleatoire ou par défaut
+        choisir_colonne_aleatoire(Plateau, Colonne)
+    ),
+    jouer_coup_interface(Colonne).
+
+% Renommer choisir_colonne_ia en choisir_colonne_aleatoire pour plus de clarté
+choisir_colonne_aleatoire(Plateau, Colonne) :-
+    findall(C, coup_valide(Plateau, C), Coups),
+    random_member(Colonne, Coups).
