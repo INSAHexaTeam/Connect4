@@ -1,5 +1,7 @@
 % Fichier : gestion/victoire.pl
 
+:- module(victoire, [verifier_victoire/2]).
+
 % Vérifier si un joueur a gagné
 verifier_victoire(Plateau, Joueur) :-
     (ligne_victoire(Plateau, Joueur) ->

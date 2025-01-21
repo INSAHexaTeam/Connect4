@@ -116,7 +116,7 @@ demarrer_interface :-
     send(SelecteurIA, append, minmax),
     send(SelecteurIA, append, minmax_defensive),
     send(SelecteurIA, append, minmax_poids),
-    send(SelecteurIA, default, aleatoire),
+    send(SelecteurIA, default, minmax),
     send(VBox, display, SelecteurIA, point(230, 60)),
     
     % Stocker la nouvelle référence
