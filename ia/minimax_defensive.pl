@@ -1,7 +1,9 @@
-:- module(minimax_defensive, [simuler_coup_defensive/4, choisir_colonne_minimax_defensive/2]).
+:- module(minimax_defensive, [choisir_colonne_minimax_defensive/2]).
 
 % Import joueur_peut_jouer/1 from the joueurs module
 :- use_module('../gestion/joueurs', [joueur_peut_jouer/1]).
+:- use_module('minimax', [simuler_coup/4, minimax/5]).
+
 
 % Simulate a move on the board
 % simuler_coup_defensive(+Plateau, +Colonne, +Joueur, -NouveauPlateau)

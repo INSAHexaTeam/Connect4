@@ -1,12 +1,26 @@
 % IA utilisant l'algorithme minimax
 :- use_module('../ia/minimax').  % Importer le module minimax
+:- use_module('../ia/minimax_defensive').  % Importer le module minimax_defensive
+:- use_module('../ia/minimax_poids_colonnes').  % Importer le module minimax_poids_colonnes
+:- use_module('../ia/aleatoire', [choisir_colonne_aleatoire/2]).
+
 
 % Prédicat principal pour jouer un coup IA
 jouer_coup_ia(Plateau, NouveauPlateau) :-
     % Vérifier que le plateau est une liste
     is_list(Plateau),
-    % Utiliser l'algorithme minimax pour choisir la colonne
-    choisir_colonne_minimax(Plateau, ColChoisie),
+    % Récupérer le type d'IA sélectionné
+    nb_getval(type_ia, TypeIA),
+    % Choisir la colonne selon le type d'IA
+    (TypeIA = aleatoire ->
+        choisir_colonne_aleatoire(Plateau, ColChoisie)
+    ; TypeIA = minmax ->
+        choisir_colonne_minimax(Plateau, ColChoisie)
+    ; TypeIA = minmax_defensive ->
+        choisir_colonne_minimax_defensive(Plateau, ColChoisie)
+    ; TypeIA = minmax_poids ->
+        choisir_colonne_minimax_poids_colonnes(Plateau, ColChoisie)
+    ),
     % Jouer le coup
     ajouter_pion(Plateau, ColChoisie, 'O', NouveauPlateau).
 
