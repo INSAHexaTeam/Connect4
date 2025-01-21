@@ -116,7 +116,12 @@ demarrer_interface :-
     send(SelecteurIA, append, minmax),
     send(SelecteurIA, append, minmax_defensive),
     send(SelecteurIA, append, minmax_poids),
+    send(SelecteurIA, append, minmax_defensive),
+    send(SelecteurIA, append, minmax_poids),
     send(SelecteurIA, default, aleatoire),
+    send(VBox, display, SelecteurIA, point(230, 60)),
+    
+    % Stocker la nouvelle référence
     send(VBox, display, SelecteurIA, point(230, 60)),
     
     % Stocker la nouvelle référence
@@ -295,12 +300,18 @@ jouer_colonne(Col) :-
 
 % Action pour quitter
 quitter_jeu :-
-    (   send(@display, confirm, 'Voulez-vous vraiment quitter ?', @default, @default, 'utf8')
-    ->  send(@display, reset),  % Nettoie toutes les fenêtres
-        retractall(grille(_)),  % Nettoie les données du jeu
-        halt                    % Quitte Prolog
-    ;   true                   % Ne rien faire si l'utilisateur annule
-    ).
+    (send(@display, confirm, 'Voulez-vous vraiment quitter ?', @default, @default, 'utf8')
+    ->  % Nettoyer toutes les références et objets
+        (nb_current(selecteur_ia, _) -> nb_delete(selecteur_ia) ; true),
+        (nb_current(type_ia, _) -> nb_delete(type_ia) ; true),
+        (nb_current(frame_ref, _) -> nb_delete(frame_ref) ; true),
+        (nb_current(grille_ref, _) -> nb_delete(grille_ref) ; true),
+        (nb_current(cercle_tour, _) -> nb_delete(cercle_tour) ; true),
+        (nb_current(derniere_colonne, _) -> nb_delete(derniere_colonne) ; true),
+        send(@display, reset),
+        retractall(grille(_)),
+        halt
+    ; true).
 
 % Afficher les règles du jeu
 afficher_regles :-
