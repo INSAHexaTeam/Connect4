@@ -9,7 +9,7 @@
 % État du jeu
 :- dynamic etat_jeu/2.  % etat_jeu(Plateau, JoueurCourant)
 
-% Plateau initial
+% Plateau initial vide
 plateau_vide([[], [], [], [], [], [], []]).
 
 % Initialiser une nouvelle partie

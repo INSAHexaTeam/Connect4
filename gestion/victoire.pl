@@ -2,9 +2,15 @@
 
 % Vérifier si un joueur a gagné
 verifier_victoire(Plateau, Joueur) :-
-    ligne_victoire(Plateau, Joueur);
-    colonne_victoire(Plateau, Joueur);
-    diagonale_victoire(Plateau, Joueur).
+    (ligne_victoire(Plateau, Joueur) ->
+        true
+    ;
+    colonne_victoire(Plateau, Joueur) ->
+        true
+    ;
+    diagonale_victoire(Plateau, Joueur) ->
+        true
+    ).
 
 % Vérifier la victoire sur une ligne
 ligne_victoire(Plateau, Joueur) :-
@@ -31,29 +37,31 @@ diagonales(Plateau, Diagonales) :-
 
 % Diagonales de gauche à droite
 diagonales_gauche_droite(Plateau, Diagonales) :-
-    findall(Diagonale, diagonale_gauche_droite(Plateau, Diagonale), Diagonales).
+    findall(Diagonale, (between(1, 6, N), diagonale_gauche_droite(Plateau, N, Diagonale)), Diagonales).
 
 % Diagonales de droite à gauche
 diagonales_droite_gauche(Plateau, Diagonales) :-
-    findall(Diagonale, diagonale_droite_gauche(Plateau, Diagonale), Diagonales).
+    findall(Diagonale, (between(1, 6, N), diagonale_droite_gauche(Plateau, N, Diagonale)), Diagonales).
 
 % Calculer une diagonale de gauche à droite
-diagonale_gauche_droite(Plateau, Diagonale) :-
-    diagonale_aux(Plateau, 1, Diagonale).
+diagonale_gauche_droite(Plateau, N, Diagonale) :-
+    diagonale_aux(Plateau, N, 1, Diagonale).
 
 % Calculer une diagonale de droite à gauche
-diagonale_droite_gauche(Plateau, Diagonale) :-
+diagonale_droite_gauche(Plateau, N, Diagonale) :-
     reverse(Plateau, PlateauInverse),
-    diagonale_aux(PlateauInverse, 1, Diagonale).
+    diagonale_aux(PlateauInverse, N, 1, Diagonale).
 
 % Extraire les diagonales
-diagonale_aux([], _, []).
-diagonale_aux([Col|Cols], N, [Elem|Diagonale]) :-
-    nth1(N, Col, Elem),
+diagonale_aux(_, _, 7, []) :- !.
+diagonale_aux([], _, _, []) :- !.
+diagonale_aux([Col|Cols], N, M, [Elem|Diagonale]) :-
+    nth1(N, Col, Elem, _),
     N1 is N + 1,
-    diagonale_aux(Cols, N1, Diagonale).
-diagonale_aux([_|Cols], N, Diagonale) :-
-    diagonale_aux(Cols, N, Diagonale).
+    M1 is M + 1,
+    diagonale_aux(Cols, N1, M1, Diagonale).
+diagonale_aux([_|Cols], N, M, Diagonale) :-
+    diagonale_aux(Cols, N, M, Diagonale).
 
 % Vérifier une sous-liste
 sous_liste(SousListe, Liste) :-
