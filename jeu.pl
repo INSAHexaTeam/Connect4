@@ -1,10 +1,10 @@
 % Fichier principal : jeu.pl
-:- consult('gestion/affichage.pl').
-:- consult('gestion/joueurs.pl').
-:- consult('gestion/victoire.pl').
-:- use_module('ia/aleatoire').
+:- use_module('gestion/affichage.pl').
+:- ensure_loaded('gestion/joueurs.pl').
+:- ensure_loaded('gestion/victoire.pl').
+:- ensure_loaded('ia/aleatoire').
 :- use_module('ia/minimax', [simuler_coup/4]).
-:- consult('test/test_ia_vs_ia.pl').  % Inclure le fichier de test de performance
+:- ensure_loaded('test/test_ia_vs_ia.pl').  % Charger les tests de performance
 
 % Déclaration des prédicats discontigus
 :- discontiguous jouer/0.

@@ -1,10 +1,9 @@
 % filepath: /Users/isalinefoissey/Connect4/test/test_ia_vs_ia.pl
 % Fichier : test_ia_vs_ia.pl
 
-:- use_module('../gestion/affichage').
-:- use_module('../gestion/joueurs').
-:- use_module('../gestion/victoire').
-:- use_module('../ia/aleatoire').
+:- consult('../gestion/joueurs').
+:- consult('../gestion/victoire').
+:- consult('../ia/aleatoire').
 :- use_module('../ia/minimax', [simuler_coup/4, choisir_colonne_minimax/2]).
 
 :- dynamic plateau_actuel/1.
@@ -123,17 +122,14 @@ afficher_bilan_vides :-
     format("Nombre moyen de coups avant victoire pour l'IA aléatoire X : ~2f\n", [MCA]),
     format("Nombre moyen de coups avant victoire pour l'IA Minimax O : ~2f\n", [MCM]),
     format("Nombre total de coups pour l'IA aléatoire X : ~w\n", [TotalA]),
-    format("Nombre total de coups pour l'IA Minimax O : ~w\n", [TotalM]),
-    % On simule des durées, à adapter si vous calculez réellement les temps
-    format("Temps d'exécution moyenne IA aléatoire X : 3.8899261951446533 secondes\n", []),
-    format("Temps d'exécution moyenne IA Minimax  O : 1.3806653022766113 secondes\n", []).
-
+    format("Nombre total de coups pour l'IA Minimax O : ~w\n", [TotalM]).
+   
 % Jouer plusieurs parties sur un même plateau
 jouer_plusieurs_parties(_, _, _, 0) :- !.
 jouer_plusieurs_parties(Plateau, IA1, IA2, N) :-
     retractall(plateau_actuel(_)),
     assert(plateau_actuel(Plateau)),
-    afficher_plateau(Plateau),
+    %afficher_plateau(Plateau),
     jouer_une_partie(IA1, IA2),
     N1 is N - 1,
     jouer_plusieurs_parties(Plateau, IA1, IA2, N1).
