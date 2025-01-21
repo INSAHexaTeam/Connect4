@@ -24,22 +24,8 @@
 
 % Prédicat principal pour démarrer l'interface
 demarrer_interface :-
-    % Nettoyer toutes les références globales
-    (nb_current(selecteur_ia, _) -> nb_delete(selecteur_ia) ; true),
-    (nb_current(type_ia, _) -> nb_delete(type_ia) ; true),
-    (nb_current(frame_ref, _) -> nb_delete(frame_ref) ; true),
-    (nb_current(grille_ref, _) -> nb_delete(grille_ref) ; true),
-    (nb_current(cercle_tour, _) -> nb_delete(cercle_tour) ; true),
-    (nb_current(derniere_colonne, _) -> nb_delete(derniere_colonne) ; true),
-    
-    % Nettoyer proprement les objets XPCE existants
-    (object(@menu) -> 
-        ignore(send(@menu, destroy)),
-        free(@menu)
-    ; true),
-    
-    % Réinitialiser l'affichage si nécessaire
-    send(@display, reset),
+    % Vérifier si un menu existe déjà et le détruire
+    (object(@menu) -> send(@menu, destroy) ; true),
     
     % Créer le nouveau menu
     new(@menu, dialog('Menu - Puissance 4')),
@@ -164,23 +150,10 @@ creer_bouton(Dialog, Texte, Action,Pos) :-
 % Création de la grille de jeu
 nouvelle_partie :-
     % Récupérer le choix de l'IA et nettoyer la référence
-    (nb_current(selecteur_ia, SelecteurIA) -> 
-        (object(SelecteurIA) -> 
-            get(SelecteurIA, selection, TypeIA),
-            nb_setval(type_ia, TypeIA)
-        ; 
-            TypeIA = aleatoire  % Valeur par défaut si le sélecteur n'est plus valide
-        ),
-        nb_delete(selecteur_ia)
-    ;
-        TypeIA = aleatoire  % Valeur par défaut si pas de sélecteur
-    ),
-    
-    % Nettoyer proprement le menu
-    (object(@menu) -> 
-        ignore(send(@menu, destroy)),
-        free(@menu)
-    ; true),
+    % Récupérer le choix de l'IA avant de fermer le menu
+    nb_getval(selecteur_ia, SelecteurIA),
+    get(SelecteurIA, selection, TypeIA),
+    nb_setval(type_ia, TypeIA),  % Stocker le type d'IA pour la partie
     
     send(@menu, free),
     new(F, frame('Puissance 4')),
@@ -322,18 +295,12 @@ jouer_colonne(Col) :-
 
 % Action pour quitter
 quitter_jeu :-
-    (send(@display, confirm, 'Voulez-vous vraiment quitter ?', @default, @default, 'utf8')
-    ->  % Nettoyer toutes les références et objets
-        (nb_current(selecteur_ia, _) -> nb_delete(selecteur_ia) ; true),
-        (nb_current(type_ia, _) -> nb_delete(type_ia) ; true),
-        (nb_current(frame_ref, _) -> nb_delete(frame_ref) ; true),
-        (nb_current(grille_ref, _) -> nb_delete(grille_ref) ; true),
-        (nb_current(cercle_tour, _) -> nb_delete(cercle_tour) ; true),
-        (nb_current(derniere_colonne, _) -> nb_delete(derniere_colonne) ; true),
-        send(@display, reset),
-        retractall(grille(_)),
-        halt
-    ; true).
+    (   send(@display, confirm, 'Voulez-vous vraiment quitter ?', @default, @default, 'utf8')
+    ->  send(@display, reset),  % Nettoie toutes les fenêtres
+        retractall(grille(_)),  % Nettoie les données du jeu
+        halt                    % Quitte Prolog
+    ;   true                   % Ne rien faire si l'utilisateur annule
+    ).
 
 % Afficher les règles du jeu
 afficher_regles :-
