@@ -23,16 +23,16 @@ demander_colonne(Joueur, Colonne, TypeJoueur) :-
 % Gestion du choix pour un joueur humain
 demander_colonne_humain(Joueur, Colonne) :-
     format("Joueur ~w, choisissez une colonne (1-7 ou 'stop' pour arrêter) : ", [Joueur]),
-    catch(read(Input), _, Input = invalide),
-    (Input = stop ->
+    read(Input),
+    (   Input = stop ->
         writeln("Partie arrêtée."),
         halt  % Arrête le programme
-    ; integer(Input), between(1, 7, Input) ->
+    ;   integer(Input), between(1, 7, Input) ->
         Colonne = Input
-    ;
-        writeln("Entrée invalide, veuillez choisir un numéro entre 1 et 7 ou 'stop'."),
+    ;   writeln("Entrée invalide, veuillez choisir un numéro entre 1 et 7 ou 'stop'."),
         demander_colonne_humain(Joueur, Colonne)
     ).
+
 
 % Gestion du choix pour une IA aléatoire
 demander_colonne_ia_aleatoire(Joueur, Colonne) :-
