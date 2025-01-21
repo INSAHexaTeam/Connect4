@@ -22,7 +22,7 @@ initialiser_partie :-
 demarrer_jeu :-
     initialiser_partie.
 
-% Jouer un coup depuis l'interface
+%Jouer un coup depuis l'interface
 jouer_coup_interface(Colonne) :-
     etat_jeu(Plateau, Joueur),
     (Joueur = 'X' ->

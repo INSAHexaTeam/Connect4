@@ -1,7 +1,8 @@
 % Fichier : ia/aleatoire.pl
 
 :- module(aleatoire, [choisir_colonne_ia/1]).
-:- module(aleatoire, [joueur_peut_jouer/1]).
+:- use_module('../jeu', [joueur_peut_jouer/1]).
+# :- module(aleatoire, [joueur_peut_jouer/1]).
 
 % IA : choisir une colonne aléatoire valide
 choisir_colonne_ia(Colonne) :-
@@ -12,7 +13,8 @@ choisir_colonne_ia(Colonne) :-
 
 % Vérifie si une colonne est jouable
 joueur_peut_jouer(Colonne) :-
-    plateau_actuel(Plateau),  % Récupère le plateau actuel
+    etat_jeu(Plateau, Joueur),  % Récupère le plateau actuel
     nth1(Colonne, Plateau, ListeColonne),
     length(ListeColonne, Taille),
     Taille < 6.  % La colonne n'est pas pleine
+
