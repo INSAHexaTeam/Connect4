@@ -2,7 +2,8 @@
 :- consult('gestion/affichage.pl').
 :- consult('gestion/joueurs.pl').
 :- consult('gestion/victoire.pl').
-:- consult('gestion/ia.pl').
+:- use_module('ia/aleatoire').
+:- use_module('ia/minimax').  % Import explicite de simuler_coup
 :- use_module(library(pce)).
 
 % État du jeu
