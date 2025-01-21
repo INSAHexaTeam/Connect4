@@ -3,13 +3,13 @@
 % Vérifier si un joueur a gagné
 verifier_victoire(Plateau, Joueur) :-
     (ligne_victoire(Plateau, Joueur) ->
-        writeln('Victoire par ligne')
+        true
     ;
     colonne_victoire(Plateau, Joueur) ->
-        writeln('Victoire par colonne')
+        true
     ;
     diagonale_victoire(Plateau, Joueur) ->
-        writeln('Victoire par diagonale')
+        true
     ).
 
 % Vérifier la victoire sur une ligne

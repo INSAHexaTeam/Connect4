@@ -3,7 +3,13 @@
 :- consult('gestion/joueurs.pl').
 :- consult('gestion/victoire.pl').
 :- use_module('ia/aleatoire').
-:- use_module('ia/minimax', [simuler_coup/4]).  % Import explicite de simuler_coup
+:- use_module('ia/minimax', [simuler_coup/4]).
+:- consult('test/test_ia_vs_ia.pl').  % Inclure le fichier de test de performance
+
+% Déclaration des prédicats discontigus
+:- discontiguous jouer/0.
+:- discontiguous choisir_mode_jeu/0.
+:- discontiguous jouer_tour/3.
 
 % Déclaration pour manipuler dynamiquement le plateau
 :- dynamic plateau_actuel/1.
@@ -24,9 +30,10 @@ choisir_mode_jeu :-
     writeln("1. Joueur vs Joueur"),
     writeln("2. Joueur vs IA (aleatoire)"),
     writeln("3. Joueur vs IA (Minimax)"),
-    writeln("4. Quitter"),
+    writeln("4. Tester les performances des IA"),
+    writeln("5. Quitter"),
     catch(read(Mode), _, Mode = invalide),
-    (integer(Mode), between(1, 4, Mode) ->
+    (integer(Mode), between(1, 5, Mode) ->
         (Mode = 1 ->
             jouer_tour('X', humain, humain)
         ; Mode = 2 ->
@@ -34,6 +41,8 @@ choisir_mode_jeu :-
         ; Mode = 3 ->
             jouer_tour('X', humain, ia_minimax)
         ; Mode = 4 ->
+            tester_performances
+        ; Mode = 5 ->
             writeln("Au revoir !"), halt
         )
     ;
