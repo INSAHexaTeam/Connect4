@@ -2,7 +2,7 @@
 :- consult('gestion/affichage.pl').
 :- consult('gestion/joueurs.pl').
 :- consult('gestion/victoire.pl').
-:- use_module('ia/aleatoire').
+:- use_module('ia/aleatoire', [choisir_colonne_aleatoire/2]).
 :- use_module('ia/minimax').  % Import explicite de simuler_coup
 :- use_module(library(pce)).
 
@@ -73,7 +73,4 @@ jouer_coup_ia :-
     ),
     jouer_coup_interface(Colonne).
 
-% Renommer choisir_colonne_ia en choisir_colonne_aleatoire pour plus de clarté
-choisir_colonne_aleatoire(Plateau, Colonne) :-
-    findall(C, coup_valide(Plateau, C), Coups),
-    random_member(Colonne, Coups).
+

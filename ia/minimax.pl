@@ -1,9 +1,9 @@
 % File: ia/minimax.pl
 
-:- module(minimax, [simuler_coup/4, choisir_colonne_minimax/2]).
+:- module(minimax, [simuler_coup/4, choisir_colonne_minimax/2, minimax/5]).
 
 % Import joueur_peut_jouer/1 from the joueurs module
-:- use_module('../ia/aleatoire', [joueur_peut_jouer/1]).
+:- use_module('../gestion/joueurs', [joueur_peut_jouer/1]).
 
 % Simulate a move on the board
 % simuler_coup(+Plateau, +Colonne, +Joueur, -NouveauPlateau)
