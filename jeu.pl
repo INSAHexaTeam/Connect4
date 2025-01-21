@@ -24,7 +24,8 @@ choisir_mode_jeu :-
     writeln("1. Joueur vs Joueur"),
     writeln("2. Joueur vs IA (aleatoire)"),
     writeln("3. Joueur vs IA (Minimax)"),
-    writeln("4. Quitter"),
+    writeln("4. Joueur vs IA (Minimax) - Poids des colonnes"),
+    writeln("5. Quitter"),
     catch(read(Mode), _, Mode = invalide),
     (integer(Mode), between(1, 4, Mode) ->
         (Mode = 1 ->
@@ -34,6 +35,8 @@ choisir_mode_jeu :-
         ; Mode = 3 ->
             jouer_tour('X', humain, ia_minimax)
         ; Mode = 4 ->
+            jouer_tour('X', humain, ia_minimax_poids_colonnes)
+        ; Mode = 5 ->
             writeln("Au revoir !"), halt
         )
     ;
