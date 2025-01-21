@@ -18,10 +18,6 @@ remplacer_colonne(Plateau, Colonne, NouvelleCol, NouveauPlateau) :-
     nth1(Colonne, Plateau, _, Rest),
     nth1(Colonne, NouveauPlateau, NouvelleCol, Rest).
 
-% Minimax logic: choose the optimal column
-% choisir_colonne_minimax(+Plateau, -Colonne)
-choisir_colonne_minimax(Plateau, Colonne) :-
-    minimax(Plateau, 3, true, _, Colonne).  % Depth of 3
 
 % Minimax algorithm
 % minimax(+Plateau, +Profondeur, +MaximizingPlayer, -MeilleurScore, -MeilleurCoup)
@@ -56,3 +52,26 @@ evaluer_plateau(Plateau, Score) :-
     (verifier_victoire(Plateau, 'X') -> Score = 100 ;  % AI win
      verifier_victoire(Plateau, 'O') -> Score = -100 ;  % Opponent win
      Score = 0).  % Neutral
+
+
+% Check if the opponent has an immediate winning move
+% bloquer_si_necessaire(+Plateau, +Joueur, -ColonneBloque)
+bloquer_si_necessaire(Plateau, Opponent, ColonneBloque) :-
+    % Find all valid moves
+    findall(Colonne, joueur_peut_jouer(Colonne), Coups),
+    % Check each move to see if it leads to a victory for the opponent
+    member(Colonne, Coups),
+    simuler_coup(Plateau, Colonne, Opponent, NouveauPlateau),
+    verifier_victoire(NouveauPlateau, Opponent),  % Opponent wins with this move
+    ColonneBloque = Colonne, !.  % Return the blocking column
+
+% Minimax logic: choose the optimal column
+% choisir_colonne_minimax(+Plateau, -Colonne)
+choisir_colonne_minimax(Plateau, Colonne) :-
+    % Assume AI plays as 'O' and the opponent is 'X'
+    (   bloquer_si_necessaire(Plateau, 'X', Colonne)  
+    ->  true  % If a threat exists, block it directly
+    ;   minimax(Plateau, 3, true, _, Colonne)  % Otherwise, call minimax
+    ).
+
+
