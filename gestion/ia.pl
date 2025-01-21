@@ -1,13 +1,12 @@
-% IA simple qui joue aléatoirement
+% IA utilisant l'algorithme minimax
+:- use_module('../ia/minimax').  % Importer le module minimax
+
+% Prédicat principal pour jouer un coup IA
 jouer_coup_ia(Plateau, NouveauPlateau) :-
     % Vérifier que le plateau est une liste
     is_list(Plateau),
-    % Obtenir la liste des coups valides
-    findall(Col, (between(1, 7, Col), coup_valide(Plateau, Col)), CoupsValides),
-    % Vérifier qu'il y a des coups valides disponibles
-    CoupsValides \= [],
-    % Choisir un coup aléatoire parmi les coups valides
-    random_member(ColChoisie, CoupsValides),
+    % Utiliser l'algorithme minimax pour choisir la colonne
+    choisir_colonne_minimax(Plateau, ColChoisie),
     % Jouer le coup
     ajouter_pion(Plateau, ColChoisie, 'O', NouveauPlateau).
 
