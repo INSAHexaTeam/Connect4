@@ -46,7 +46,7 @@ diagonale_droite_gauche(Plateau, Diagonale) :-
     reverse(Plateau, PlateauInverse),
     diagonale_aux(PlateauInverse, 1, Diagonale).
 
-% Extraire les diagonales à parti
+% Extraire les diagonales
 diagonale_aux([], _, []).
 diagonale_aux([Col|Cols], N, [Elem|Diagonale]) :-
     nth1(N, Col, Elem),
