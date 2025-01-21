@@ -48,11 +48,19 @@ minimax(Plateau, Profondeur, false, MeilleurScore, MeilleurCoup) :-
 % minimax_score(+Plateau, +Profondeur, +MaximizingPlayer, +Coup, -Score)
 minimax_score(Plateau, Profondeur, MaximizingPlayer, Coup, Score) :-
     simuler_coup(Plateau, Coup, _, NouveauPlateau),
-    minimax(NouveauPlateau, Profondeur, MaximizingPlayer, Score, _).
+    minimax(NouveauPlateau, Profondeur, MaximizingPlayer, BaseScore, _),
+    poids_colonne(Coup, Poids),
+    Score is BaseScore + Poids.
 
 % Evaluate the board
 % evaluer_plateau(+Plateau, -Score)
 evaluer_plateau(Plateau, Score) :-
     (verifier_victoire(Plateau, 'X') -> Score = 100 ;  % AI win
      verifier_victoire(Plateau, 'O') -> Score = -100 ;  % Opponent win
-     Score = 0).  % Neutral
+     Score = 0).
+
+% Assign weights to columns
+% poids_colonne(+Colonne, -Poids)
+poids_colonne(Colonne, Poids) :-
+    PoidsList = [0, 1, 2, 3, 2, 1, 0],
+    nth1(Colonne, PoidsList, Poids).
