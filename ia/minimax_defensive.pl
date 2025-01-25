@@ -41,8 +41,8 @@ minimax_defensive(Plateau, Profondeur, false, MeilleurScore, MeilleurCoup) :-
 % Helper: calculate the score for a move
 % minimax_score(+Plateau, +Profondeur, +MaximizingPlayer, +Coup, -Score)
 minimax_score(Plateau, Profondeur, MaximizingPlayer, Coup, Score) :-
-    simuler_coup(Plateau, Coup, _, NouveauPlateau),
-    minimax(NouveauPlateau, Profondeur, MaximizingPlayer, Score, _).
+    simuler_coup_defensive(Plateau, Coup, _, NouveauPlateau),
+    minimax_defensive(NouveauPlateau, Profondeur, MaximizingPlayer, Score, _).
 
 % Evaluate the board
 % evaluer_plateau(+Plateau, -Score)
@@ -59,7 +59,7 @@ bloquer_si_necessaire(Plateau, Opponent, ColonneBloque) :-
     findall(Colonne, joueur_peut_jouer(Colonne), Coups),
     % Check each move to see if it leads to a victory for the opponent
     member(Colonne, Coups),
-    simuler_coup(Plateau, Colonne, Opponent, NouveauPlateau),
+    simuler_coup_defensive(Plateau, Colonne, Opponent, NouveauPlateau),
     verifier_victoire(NouveauPlateau, Opponent),  % Opponent wins with this move
     ColonneBloque = Colonne, !.  % Return the blocking column
 
