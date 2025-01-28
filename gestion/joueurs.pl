@@ -31,8 +31,8 @@ demander_colonne(Joueur, Colonne, TypeJoueur) :-
       fail).
 
 % Gestion du choix pour un joueur humain
-demander_colonne_humain(Joueur, Colonne) :-
-    format("Joueur ~w, choisissez une colonne (1-7 ou 'stop' pour arrêter) : ", [Joueur]),
+demander_colonne_humain(_Joueur, Colonne) :-
+    format("Joueur ~w, choisissez une colonne (1-7 ou 'stop' pour arrêter) : ", [_Joueur]),
     read(Input),
     (   Input = stop ->
         writeln("Partie arrêtée."),
@@ -40,35 +40,32 @@ demander_colonne_humain(Joueur, Colonne) :-
     ;   integer(Input), between(1, 7, Input) ->
         Colonne = Input
     ;   writeln("Entrée invalide, veuillez choisir un numéro entre 1 et 7 ou 'stop'."),
-        demander_colonne_humain(Joueur, Colonne)
+        demander_colonne_humain(_Joueur, Colonne)
     ).
 
 
 % Gestion du choix pour une IA aléatoire
-demander_colonne_ia_aleatoire(Joueur, Colonne) :-
-    writeln('L IA (aléatoire) réfléchit...'),
-    sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
-    aleatoire:choisir_colonne_ia(Colonne),  % Appel au module aléatoire
-    format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne]).
+demander_colonne_ia_aleatoire(_Joueur, Colonne) :-
+    % writeln('L IA (aléatoire) réfléchit...'),
+    aleatoire:choisir_colonne_ia(Colonne).  % Appel au module aléatoire
 
 % Gestion du choix pour une IA utilisant Minimax
-demander_colonne_ia_minimax(Joueur, Colonne) :-
-    writeln("L'IA (Minimax) réfléchit..."),
-    sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
+demander_colonne_ia_minimax(_Joueur, Colonne) :-
+    % writeln("L'IA (Minimax) réfléchit..."),
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax:choisir_colonne_minimax(Plateau, Colonne) ->
-        format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
+        true
     ;
         writeln('[ERREUR] L IA n a pas pu jouer : aucun mouvement possible.'),
         fail).
 
 % Gestion du choix pour une IA utilisant Minimax avec poids des colonnes
 demander_colonne_ia_minimax_poids_colonnes(Joueur, Colonne) :-
-    writeln("L'IA (Minimax - Poids des colonnes) réfléchit..."),
-    sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
+    %writeln("L'IA (Minimax - Poids des colonnes) réfléchit..."),
+    %sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax_poids_colonnes:choisir_colonne_minimax_poids_colonnes(Plateau, Colonne) ->
-        format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
+        true
     ;
         writeln('[ERREUR] L IA n a pas pu jouer : aucun mouvement possible.'),
         fail).
@@ -80,7 +77,7 @@ demander_colonne_ia_minimax_defensive(Joueur, Colonne) :-
     sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax_defensive:choisir_colonne_minimax_defensive(Plateau, Colonne) ->
-        format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
+        true
     ;
         writeln('[ERREUR] L IA n a pas pu jouer : aucun mouvement possible.'),
         fail).

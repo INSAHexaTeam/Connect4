@@ -1,4 +1,7 @@
+% filepath: /Users/isalinefoissey/Connect4/gestion/affichage.pl
 % Afficher le plateau de jeu
+:- module(affichage, [afficher_plateau/1, transpose/2]).
+
 afficher_plateau(Plateau) :-
     remplir_plateau(Plateau, PlateauRempli),  % Compléter les colonnes pour une longueur uniforme
     transpose(PlateauRempli, Lignes),        % Transformer colonnes -> lignes

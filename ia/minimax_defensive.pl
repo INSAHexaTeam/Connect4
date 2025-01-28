@@ -2,6 +2,7 @@
 
 % Import joueur_peut_jouer/1 from the joueurs module
 :- use_module('../gestion/joueurs', [joueur_peut_jouer/1]).
+% Dans minimax_defensive.pl
 
 % Simulate a move on the board
 % simuler_coup_defensive(+Plateau, +Colonne, +Joueur, -NouveauPlateau)
