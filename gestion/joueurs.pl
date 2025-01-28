@@ -79,7 +79,7 @@ demander_colonne_ia_minimax_defensive(Joueur, Colonne) :-
 demander_colonne_ia_minimax_defensive_ameliore(Joueur, Colonne) :-
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax_defensive_ameliore:choisir_colonne_minimax_defensive_ameliore(Plateau, Colonne) ->
-        format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
+        true
     ;
         writeln('[ERREUR] L IA n a pas pu jouer : aucun mouvement possible.'),
         fail).

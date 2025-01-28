@@ -48,7 +48,7 @@ choisir_mode_jeu :-
     writeln("13. Tester Defensive vs Defensive Ameliore"),
     writeln("14. Quitter"),
     catch(read(Mode), _, Mode = invalide),
-    (integer(Mode), between(1, 12, Mode) ->
+    (integer(Mode), between(1, 13, Mode) ->
         (Mode = 1 ->
             jouer_tour('X', humain, humain)
         ; Mode = 2 ->
