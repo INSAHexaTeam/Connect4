@@ -2,6 +2,7 @@
 
 % Import joueur_peut_jouer/1 from the joueurs module
 :- use_module('../gestion/joueurs', [joueur_peut_jouer/1]).
+% Dans minimax_defensive.pl
 
 % Simulate a move on the board
 % simuler_coup_defensive(+Plateau, +Colonne, +Joueur, -NouveauPlateau)
@@ -42,7 +43,7 @@ minimax_defensive(Plateau, Profondeur, false, MeilleurScore, MeilleurCoup) :-
 % minimax_score(+Plateau, +Profondeur, +MaximizingPlayer, +Coup, -Score)
 minimax_score(Plateau, Profondeur, MaximizingPlayer, Coup, Score) :-
     simuler_coup(Plateau, Coup, _, NouveauPlateau),
-    minimax(NouveauPlateau, Profondeur, MaximizingPlayer, Score, _).
+    minimax_defensive(NouveauPlateau, Profondeur, MaximizingPlayer, Score, _).
 
 % Evaluate the board
 % evaluer_plateau(+Plateau, -Score)

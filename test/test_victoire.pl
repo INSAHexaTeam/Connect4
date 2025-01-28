@@ -30,12 +30,7 @@ test(victoire_colonne) :-
 % Test de victoire par diagonale (gauche à droite)
 test(victoire_diagonale_gauche_droite) :-
     Plateau = [
-        ['X', 'O', 'O', 'O', 'O', 'O', 'O'],
-        ['O', 'X', 'O', 'O', 'O', 'O', 'O'],
-        ['O', 'O', 'X', 'O', 'O', 'O', 'O'],
-        ['O', 'O', 'O', 'X', 'O', 'O', 'O'],
-        ['O', 'O', 'O', 'O', 'X', 'O', 'O'],
-        ['O', 'O', 'O', 'O', 'O', 'X', 'O']
+    [['X'], ['O', 'X', 'O', 'X'], ['O', 'X', 'X'], ['X', 'X', 'O', 'X'], ['O'], ['X'], ['O']]
     ],
     verifier_victoire(Plateau, 'X').
 

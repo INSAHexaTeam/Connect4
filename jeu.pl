@@ -5,6 +5,8 @@
 :- ensure_loaded('ia/aleatoire').
 :- use_module('ia/minimax', [simuler_coup/4]).
 :- ensure_loaded('test/test_ia_vs_ia.pl').  % Charger les tests de performance
+:- ensure_loaded('test/test_minimax_vs_defensive.pl').  % Charger les tests de performance
+:- ensure_loaded('test/test_minimax_vs_minimax_poids_colonnes.pl').  % Charger les tests de performance
 
 % Déclaration des prédicats discontigus
 :- discontiguous jouer/0.
@@ -33,9 +35,11 @@ choisir_mode_jeu :-
     writeln("4. Joueur vs IA (Minimax) - Poids des colonnes"),
     writeln("5. Joueur vs IA (Minimax) - Defensive"),
     writeln("6. Tester les performances des IA"),
-    writeln("7. Quitter"),
+    writeln("7. Tester Minimax vs Defensive"),
+    writeln("8. Tester Minimax vs Minimax - Poids des colonnes"),
+    writeln("9. Quitter"),
     catch(read(Mode), _, Mode = invalide),
-    (integer(Mode), between(1, 7, Mode) ->
+    (integer(Mode), between(1, 9, Mode) ->
         (Mode = 1 ->
             jouer_tour('X', humain, humain)
         ; Mode = 2 ->
@@ -49,6 +53,10 @@ choisir_mode_jeu :-
         ; Mode = 6 ->
             tester_performances
         ; Mode = 7 ->
+            tester_performances_defensive
+        ; Mode = 8 ->
+            tester_performances_poids_colonnes
+        ; Mode = 9 ->
             writeln("Au revoir !"), halt
         )
     ;
