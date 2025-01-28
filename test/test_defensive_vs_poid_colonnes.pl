@@ -16,7 +16,7 @@
 :- retractall(coups_ia_minimax_defensive(_)), assert(coups_ia_minimax_defensive([])).
 
 % Définir plusieurs configurations de plateau NON VIDES
-configurations_plateau_remplis_defensive([
+configurations_plateau_remplis_def_col([
     [['X', 'X', 'X'], [], [], [], [], [], []],  % Victoire possible pour X
     [[], [], [], [], [], [], ['O', 'O', 'O']],  % Victoire possible pour O
     [[], [], [], ['O'], [], ['O'], ['O']],      % Plateau presque victoire pour O
@@ -36,7 +36,7 @@ configurations_plateau_vides_defensive([
 % Pour chaque configuration, on affiche le plateau, on joue,
 % puis on affiche le vainqueur et le nombre de coups.
 tester_configurations_remplis_defensive :-
-    configurations_plateau_remplis_defensive(Configs),
+    configurations_plateau_remplis_def_col(Configs),
     forall(
         member(Config, Configs),
         (

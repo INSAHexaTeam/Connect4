@@ -24,8 +24,7 @@ configurations_plateau_remplis_defensive([
     [['X'], ['O', 'X'], ['X', 'O', 'X'], ['O', 'O', 'O'], ['X'], ['O'], ['X']],  % Diagonale pour X
     [['O'], ['X', 'O'], ['X', 'O', 'O'], ['O', 'O', 'X'], ['X'], ['O'], ['X']],  % Diagonale pour X
     [['X', 'X'], [], [], [], [], [], []],        % Victoire presque pour X
-    [['O', 'O'], [], [], [], [], [], []],       % Victoire presque pour O
-    [['O'], ['X', 'O', 'X', 'O'], ['X', 'O', 'O'], ['O', 'O', 'X'], ['X'], ['O'], ['X']]
+    [['O', 'O'], [], [], [], [], [], []]       % Victoire presque pour O
 ]).
 
 % Définir des configurations de plateau VIDES
