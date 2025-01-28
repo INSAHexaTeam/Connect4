@@ -36,14 +36,15 @@ choisir_mode_jeu :-
     writeln("3. Joueur vs IA (Minimax)"),
     writeln("4. Joueur vs IA (Minimax) - Poids des colonnes"),
     writeln("5. Joueur vs IA (Minimax) - Defensive"),
-    writeln("6. Tester les performances des IA"),
-    writeln("7. Tester Minimax vs Defensive"),
-    writeln("8. Tester Minimax vs Minimax - Poids des colonnes"),
-    writeln("9. Tester Minimax Defensive vs Minimax - Poids des colonnes"),
-    writeln("10. Tester Aléatoire vs Defensive"),
-    writeln("11. Quitter"),
+    writeln("6. Joueur vs IA (Minimax) - Defensive amélioré"),
+    writeln("7. Tester les performances des IA"),
+    writeln("8. Tester Minimax vs Defensive"),
+    writeln("9. Tester Minimax vs Minimax - Poids des colonnes"),
+    writeln("10. Tester Minimax Defensive vs Minimax - Poids des colonnes"),
+    writeln("11. Tester Aléatoire vs Defensive"),
+    writeln("12. Quitter"),
     catch(read(Mode), _, Mode = invalide),
-    (integer(Mode), between(1, 10, Mode) ->
+    (integer(Mode), between(1, 12, Mode) ->
         (Mode = 1 ->
             jouer_tour('X', humain, humain)
         ; Mode = 2 ->
@@ -54,17 +55,19 @@ choisir_mode_jeu :-
             jouer_tour('X', humain, ia_minimax_poids_colonnes)
         ; Mode = 5 ->
             jouer_tour('X', humain, ia_minimax_defensive)
-        ; Mode = 6 ->
-            tester_performances
+        ; Mode = 6 -> 
+            jouer_tour('X', humain, ia_minimax_defensive_ameliore)
         ; Mode = 7 ->
-            tester_performances_defensive
+            tester_performances
         ; Mode = 8 ->
-            tester_performances_poids_colonnes
+            tester_performances_defensive
         ; Mode = 9 ->
-            tester_performances_defensive_poids_colonnes
+            tester_performances_poids_colonnes
         ; Mode = 10 ->
-            tester_aleatoire_vs_defensive
+            tester_performances_defensive_poids_colonnes
         ; Mode = 11 ->
+            tester_aleatoire_vs_defensive
+        ; Mode = 12 ->
             writeln("Au revoir !"), halt
         )
     ;
