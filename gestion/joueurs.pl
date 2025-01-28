@@ -6,6 +6,7 @@
 
 :- use_module('../ia/minimax_poids_colonnes', [choisir_colonne_minimax_poids_colonnes/2]).
 :- use_module('../ia/minimax_defensive', [choisir_colonne_minimax_defensive/2]).
+:- use_module('../ia/aleatoire', [choisir_colonne_aleatoire/2]).
 
 
 % Alterne entre les joueurs X et O
@@ -46,14 +47,15 @@ demander_colonne_humain(Joueur, Colonne) :-
 demander_colonne_ia_aleatoire(Joueur, Colonne) :-
     writeln('L IA (aléatoire) réfléchit...'),
     sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
-    aleatoire:choisir_colonne_ia(Colonne),  % Appel au module aléatoire
+    etat_jeu(Plateau, Joueur),  % Récupère le plateau actuel
+    aleatoire:choisir_colonne_aleatoire(Plateau, Colonne),  % Appel au module aléatoire
     format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne]).
 
 % Gestion du choix pour une IA utilisant Minimax
 demander_colonne_ia_minimax(Joueur, Colonne) :-
     writeln("L'IA (Minimax) réfléchit..."),
     sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
-    plateau_actuel(Plateau),  % Récupère le plateau actuel
+    etat_jeu(Plateau,Joueur),  % Récupère le plateau actuel
     (minimax:choisir_colonne_minimax(Plateau, Colonne) ->
         format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
     ;
@@ -64,7 +66,7 @@ demander_colonne_ia_minimax(Joueur, Colonne) :-
 demander_colonne_ia_minimax_poids_colonnes(Joueur, Colonne) :-
     writeln("L'IA (Minimax - Poids des colonnes) réfléchit..."),
     sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
-    plateau_actuel(Plateau),  % Récupère le plateau actuel
+    etat_jeu(Plateau,Joueur),  % Récupère le plateau actuel
     (minimax_poids_colonnes:choisir_colonne_minimax_poids_colonnes(Plateau, Colonne) ->
         format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
     ;
@@ -76,7 +78,7 @@ demander_colonne_ia_minimax_poids_colonnes(Joueur, Colonne) :-
 demander_colonne_ia_minimax_defensive(Joueur, Colonne) :-
     writeln("L'IA (Minimax - Poids des colonnes) réfléchit..."),
     sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
-    plateau_actuel(Plateau),  % Récupère le plateau actuel
+    etat_jeu(Plateau, Joueur),  % Récupère le plateau actuel
     (minimax_defensive:choisir_colonne_minimax_defensive(Plateau, Colonne) ->
         format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
     ;
@@ -86,7 +88,7 @@ demander_colonne_ia_minimax_defensive(Joueur, Colonne) :-
 
 % Vérifie si une colonne est valide pour jouer
 joueur_peut_jouer(Colonne) :-
-    plateau_actuel(Plateau),  % Récupère le plateau actuel
+    etat_jeu(Plateau, _Joueur),  % Récupère le plateau actuel
     nth1(Colonne, Plateau, ListeColonne),
     length(ListeColonne, Taille),
     Taille < 6.  % La colonne est valide si elle contient moins de 6 pions

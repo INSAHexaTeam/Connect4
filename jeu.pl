@@ -2,73 +2,75 @@
 :- consult('gestion/affichage.pl').
 :- consult('gestion/joueurs.pl').
 :- consult('gestion/victoire.pl').
-:- use_module('ia/aleatoire').
-:- use_module('ia/minimax', [simuler_coup/4]).  % Import explicite de simuler_coup
+:- use_module('ia/aleatoire', [choisir_colonne_aleatoire/2]).
+:- use_module('ia/minimax').  % Import explicite de simuler_coup
+:- use_module(library(pce)).
 
-% Déclaration pour manipuler dynamiquement le plateau
-:- dynamic plateau_actuel/1.
+% État du jeu
+:- dynamic etat_jeu/2.  % etat_jeu(Plateau, JoueurCourant)
 
 % Plateau initial vide
 plateau_vide([[], [], [], [], [], [], []]).
 
-% Démarrer le jeu
-jouer :-
-    retractall(plateau_actuel(_)),  % Supprime tout plateau existant
+% Initialiser une nouvelle partie
+initialiser_partie :-
     plateau_vide(Plateau),
-    assert(plateau_actuel(Plateau)),  % Initialise le plateau
-    choisir_mode_jeu.
+    retractall(etat_jeu(_, _)),
+    assertz(etat_jeu(Plateau, 'X')).
 
-% Choisir le mode de jeu
-choisir_mode_jeu :-
-    writeln("Choisissez le mode de jeu :"),
-    writeln("1. Joueur vs Joueur"),
-    writeln("2. Joueur vs IA (aleatoire)"),
-    writeln("3. Joueur vs IA (Minimax)"),
-    writeln("4. Joueur vs IA (Minimax) - Poids des colonnes"),
-    writeln("5. Joueur vs IA (Minimax) - Defensive"),
-    writeln("6. Quitter"),
-    catch(read(Mode), _, Mode = invalide),
-    (integer(Mode), between(1, 6, Mode) ->
-        (Mode = 1 ->
-            jouer_tour('X', humain, humain)
-        ; Mode = 2 ->
-            jouer_tour('X', humain, ia_aleatoire)
-        ; Mode = 3 ->
-            jouer_tour('X', humain, ia_minimax)
-        ; Mode = 4 ->
-            jouer_tour('X', humain, ia_minimax_poids_colonnes)
-        ; Mode = 5 ->
-            jouer_tour('X', humain, ia_minimax_defensive)
-        ; Mode = 6 ->
-            writeln("Au revoir !"), halt
+% Démarrer le jeu (version interface graphique)
+demarrer_jeu :-
+    initialiser_partie.
+
+%Jouer un coup depuis l'interface
+jouer_coup_interface(Colonne) :-
+    etat_jeu(Plateau, Joueur),
+    (Joueur = 'X' ->
+        % Tour du joueur humain (rouge)
+        (ajouter_pion(Plateau, Colonne, Joueur, NouveauPlateau) ->
+            retract(etat_jeu(Plateau, Joueur)),
+            assertz(etat_jeu(NouveauPlateau, 'O')),
+            mettre_a_jour_interface(NouveauPlateau),
+            mettre_a_jour_indicateur_tour('O'),
+            (verifier_victoire(NouveauPlateau, Joueur) ->
+                annoncer_victoire(Joueur)
+            ; 
+                % Forcer l'exécution du tour de l'IA immédiatement
+                call(jouer_tour_ia)
+            )
+        ; 
+            send(@display, inform, 'Coup invalide !')
         )
+    ; true).
+
+% Tour de l'IA modifié pour être plus robuste
+jouer_tour_ia :-
+    etat_jeu(Plateau, 'O'),
+    % Ajouter un petit délai pour que le coup de l'IA soit visible
+    sleep(0.5),
+    % S'assurer que l'IA trouve un coup valide
+    (jouer_coup_ia(Plateau, NouveauPlateau) ->
+        retract(etat_jeu(Plateau, 'O')),
+        assertz(etat_jeu(NouveauPlateau, 'X')),
+        mettre_a_jour_interface(NouveauPlateau),
+        mettre_a_jour_indicateur_tour('X'),
+        (verifier_victoire(NouveauPlateau, 'O') ->
+            annoncer_victoire('O')
+        ; true)
     ;
-        writeln("Mode invalide, recommencez."),
-        choisir_mode_jeu
+        % En cas d'échec de l'IA, afficher un message d'erreur
+        send(@display, inform, 'Erreur: L\'IA n\'a pas pu jouer !')
     ).
 
-% Gérer un tour de jeu
-jouer_tour(Joueur, TypeJoueur1, TypeJoueur2) :-
-    plateau_actuel(Plateau),  % Récupère le plateau actuel
-    afficher_plateau(Plateau),
-    (Joueur = 'X' -> TypeJoueur = TypeJoueur1 ; TypeJoueur = TypeJoueur2),
-    demander_colonne(Joueur, Colonne, TypeJoueur),
-    (joueur_peut_jouer(Colonne) ->  % Vérifie si la colonne est jouable
-        simuler_coup(Plateau, Colonne, Joueur, NouveauPlateau),
-        (verifier_victoire(NouveauPlateau, Joueur) ->
-            retractall(plateau_actuel(_)),
-            assert(plateau_actuel(NouveauPlateau)),
-            afficher_plateau(NouveauPlateau),
-            format("Le joueur ~w a gagné !\n", [Joueur]),
-            halt  % Fin de la partie
-        ;
-            changer_joueur(Joueur, ProchainJoueur),
-            retractall(plateau_actuel(_)),
-            assert(plateau_actuel(NouveauPlateau)),
-            writeln("Vous pouvez entrer 'stop' à tout moment pour quitter."),
-            jouer_tour(ProchainJoueur, TypeJoueur1, TypeJoueur2)
-        )
-    ;
-        writeln("Colonne invalide ou pleine, réessayez."),
-        jouer_tour(Joueur, TypeJoueur1, TypeJoueur2)
-    ).
+% Jouer un coup de l'IA
+jouer_coup_ia :-
+    nb_getval(type_ia, TypeIA),
+    etat_jeu(Plateau, _),
+    (TypeIA = minmax ->
+        choisir_colonne_minimax(Plateau, Colonne)
+    ;   % Si aleatoire ou par défaut
+        choisir_colonne_aleatoire(Plateau, Colonne)
+    ),
+    jouer_coup_interface(Colonne).
+
+
