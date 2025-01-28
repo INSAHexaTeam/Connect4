@@ -4,7 +4,7 @@
 :- ensure_loaded('gestion/victoire.pl').
 :- ensure_loaded('ia/aleatoire').
 :- use_module('ia/minimax', [simuler_coup/4]).
-:- ensure_loaded('test/test_ia_vs_ia.pl').  % Charger les tests de performance
+:- ensure_loaded('test/test_aleatoire_vs_minimax.pl').  % Charger les tests de performance
 :- ensure_loaded('test/test_minimax_vs_defensive.pl').  % Charger les tests de performance
 :- ensure_loaded('test/test_minimax_vs_minimax_poids_colonnes.pl').  % Charger les tests de performance
 :- ensure_loaded('test/test_defensive_vs_poid_colonnes.pl').  % Charger les tests de performance

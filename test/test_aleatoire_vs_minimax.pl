@@ -1,5 +1,5 @@
-% filepath: /Users/isalinefoissey/Connect4/test/test_ia_vs_ia.pl
-% Fichier : test_ia_vs_ia.pl
+% filepath: /Users/isalinefoissey/Connect4/test/test_aleatoire_vs_minimax.pl
+% Fichier : test_aleatoire_vs_minimax.pl
 
 :- consult('../gestion/joueurs').
 :- consult('../gestion/victoire').
@@ -22,13 +22,12 @@ coups_ia_minimax([]).
 configurations_plateau_remplis([
     [['X', 'X', 'X'], [], [], [], [], [], []],  % Victoire possible pour X
     [[], [], [], [], [], [], ['O', 'O', 'O']],  % Victoire possible pour O
+    [[], [], ['X'], ['X'], [], ['X'], ['X']],      % Plateau presque victoire pour O
     [[], [], [], ['O'], [], ['O'], ['O']],      % Plateau presque victoire pour O
-    [[], [], [], ['X'], [], ['X'], ['X']],      % Plateau presque victoire pour O
     [['X'], ['O', 'X'], ['X', 'O', 'X'], ['O', 'O', 'O'], ['X'], ['O'], ['X']],  % Diagonale pour X
-    [['O'], ['X', 'O'], ['X', 'O', 'O'], ['O', 'O', 'X'], ['X'], ['O'], ['X']],  % Diagonale pour X
+    [['O'], ['X', 'O'], ['X', 'O', 'O'], ['O', 'O', 'X'], ['X'], ['O'], ['X']],  % Diagonale pour O
     [['X', 'X'], [], [], [], [], [], []],        % Victoire presque pour X
-    [['O', 'O'], [], [], [], [], [], []],       % Victoire presque pour O
-    [['O'], ['X', 'O', 'X', 'O'], ['X', 'O', 'O'], ['O', 'O', 'X'], ['X'], ['O'], ['X']]
+    [[], ['O', 'O'], [], [], [], [], []]
 ]).
 
 % Définir des configurations de plateau VIDES
@@ -45,8 +44,15 @@ tester_configurations_remplis :-
         (
             retractall(plateau_actuel(_)),
             assert(plateau_actuel(Config)),
+            writeln(""),
+            writeln("Nouveau plateau :"),
             afficher_plateau(Config),
-            jouer_une_partie(ia_aleatoire, ia_minimax)
+            writeln("Le joueur X (IA aleatoire) commence."),
+            jouer_une_partie(ia_aleatoire, ia_minimax),
+            retractall(plateau_actuel(_)),
+            assert(plateau_actuel(Config)),
+            writeln("Le joueur O (IA minimax) commence."),
+            jouer_une_partie(ia_minimax, ia_aleatoire)
         )
     ).
 

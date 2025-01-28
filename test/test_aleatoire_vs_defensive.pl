@@ -25,7 +25,7 @@ configurations_plateau_remplis_def([
     [['X'], ['O', 'X'], ['X', 'O', 'X'], ['O', 'O', 'O'], ['X'], ['O'], ['X']],  % Diagonale pour X
     [['O'], ['X', 'O'], ['X', 'O', 'O'], ['O', 'O', 'X'], ['X'], ['O'], ['X']],  % Diagonale pour X
     [['X', 'X'], [], [], [], [], [], []],        % Victoire presque pour X
-    [['O', 'O'], [], [], [], [], [], []]
+    [[], ['O', 'O'], [], [], [], [], []]
 ]).
 
 % Définir des configurations de plateau VIDES
@@ -42,8 +42,15 @@ tester_configurations_remplis_def :-
         (
             retractall(plateau_actuel(_)),
             assert(plateau_actuel(Config)),
+            writeln(""),
+            writeln("Nouveau plateau :"),
             afficher_plateau(Config),
-            jouer_une_partie_def(ia_aleatoire, ia_minimax_defensive)
+            writeln("Le joueur X (IA aléatoire) commence."),
+            jouer_une_partie_def(ia_aleatoire, ia_minimax_defensive),
+            retractall(plateau_actuel(_)),
+            assert(plateau_actuel(Config)),
+            writeln("Le joueur O (IA minimax_defensive) commence."),
+            jouer_une_partie_def(ia_minimax_defensive, ia_aleatoire)
         )
     ).
 
