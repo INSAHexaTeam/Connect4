@@ -6,7 +6,7 @@
 
 :- use_module('../ia/minimax_poids_colonnes', [choisir_colonne_minimax_poids_colonnes/2]).
 :- use_module('../ia/minimax_defensive', [choisir_colonne_minimax_defensive/2]).
-
+:- use_module('../ia/minimax_defensive_ameliore', [choisir_colonne_minimax_defensive_ameliore/2]).
 
 % Alterne entre les joueurs X et O
 changer_joueur('X', 'O').
@@ -24,6 +24,8 @@ demander_colonne(Joueur, Colonne, TypeJoueur) :-
         demander_colonne_ia_minimax_poids_colonnes(Joueur, Colonne)
     ; TypeJoueur = 'ia_minimax_defensive' ->
         demander_colonne_ia_minimax_defensive(Joueur, Colonne)
+    ; TypeJoueur = 'ia_minimax_defensive_ameliore' ->
+        demander_colonne_ia_minimax_defensive_ameliore(Joueur, Colonne)
     ; writeln("[ERREUR] Type de joueur non reconnu : "),
       writeln(TypeJoueur),
       fail).
@@ -74,7 +76,7 @@ demander_colonne_ia_minimax_poids_colonnes(Joueur, Colonne) :-
 
 % Gestion du choix pour une IA utilisant Minimax avec defense mechanism
 demander_colonne_ia_minimax_defensive(Joueur, Colonne) :-
-    writeln("L'IA (Minimax - Poids des colonnes) réfléchit..."),
+    writeln("L'IA (Minimax - Defensive des colonnes) réfléchit..."),
     sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax_defensive:choisir_colonne_minimax_defensive(Plateau, Colonne) ->
@@ -83,6 +85,16 @@ demander_colonne_ia_minimax_defensive(Joueur, Colonne) :-
         writeln('[ERREUR] L IA n a pas pu jouer : aucun mouvement possible.'),
         fail).
 
+demander_colonne_ia_minimax_defensive_ameliore(Joueur, Colonne) :-
+    writeln("L'IA (Minimax - Defensive des colonnes amelioré) réfléchit..."),
+    sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
+    plateau_actuel(Plateau),  % Récupère le plateau actuel
+    (minimax_defensive_ameliore:choisir_colonne_minimax_defensive_ameliore(Plateau, Colonne) ->
+        format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
+    ;
+        writeln('[ERREUR] L IA n a pas pu jouer : aucun mouvement possible.'),
+        fail).
+        
 
 % Vérifie si une colonne est valide pour jouer
 joueur_peut_jouer(Colonne) :-

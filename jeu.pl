@@ -26,9 +26,10 @@ choisir_mode_jeu :-
     writeln("3. Joueur vs IA (Minimax)"),
     writeln("4. Joueur vs IA (Minimax) - Poids des colonnes"),
     writeln("5. Joueur vs IA (Minimax) - Defensive"),
-    writeln("6. Quitter"),
+    writeln("6. Joueur vs IA (Minimax) - Defensive amélioré"),
+    writeln("7. Quitter"),
     catch(read(Mode), _, Mode = invalide),
-    (integer(Mode), between(1, 6, Mode) ->
+    (integer(Mode), between(1, 7, Mode) ->
         (Mode = 1 ->
             jouer_tour('X', humain, humain)
         ; Mode = 2 ->
@@ -40,6 +41,8 @@ choisir_mode_jeu :-
         ; Mode = 5 ->
             jouer_tour('X', humain, ia_minimax_defensive)
         ; Mode = 6 ->
+            jouer_tour('X', humain, ia_minimax_defensive_ameliore)
+        ; Mode = 7 ->
             writeln("Au revoir !"), halt
         )
     ;
