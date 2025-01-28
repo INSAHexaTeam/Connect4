@@ -62,7 +62,6 @@ demander_colonne_ia_minimax(_Joueur, Colonne) :-
 % Gestion du choix pour une IA utilisant Minimax avec poids des colonnes
 demander_colonne_ia_minimax_poids_colonnes(Joueur, Colonne) :-
     %writeln("L'IA (Minimax - Poids des colonnes) réfléchit..."),
-    %sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax_poids_colonnes:choisir_colonne_minimax_poids_colonnes(Plateau, Colonne) ->
         true
@@ -74,7 +73,6 @@ demander_colonne_ia_minimax_poids_colonnes(Joueur, Colonne) :-
 % Gestion du choix pour une IA utilisant Minimax avec defense mechanism
 demander_colonne_ia_minimax_defensive(Joueur, Colonne) :-
     writeln("L'IA (Minimax - Defensive des colonnes) réfléchit..."),
-    sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax_defensive:choisir_colonne_minimax_defensive(Plateau, Colonne) ->
         true
@@ -84,7 +82,6 @@ demander_colonne_ia_minimax_defensive(Joueur, Colonne) :-
 
 demander_colonne_ia_minimax_defensive_ameliore(Joueur, Colonne) :-
     writeln("L'IA (Minimax - Defensive des colonnes amelioré) réfléchit..."),
-    sleep(1),  % Simule un délai pour rendre l'IA plus naturelle
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax_defensive_ameliore:choisir_colonne_minimax_defensive_ameliore(Plateau, Colonne) ->
         format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])

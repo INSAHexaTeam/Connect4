@@ -9,6 +9,7 @@
 :- ensure_loaded('test/test_minimax_vs_minimax_poids_colonnes.pl').  % Charger les tests de performance
 :- ensure_loaded('test/test_defensive_vs_poid_colonnes.pl').  % Charger les tests de performance
 :- ensure_loaded('test/test_aleatoire_vs_defensive.pl').  % Charger les tests de performance
+:- ensure_loaded('test/test_minimax_vs_defensive_ameliore.pl').  % Charger les tests de performance
 
 % Déclaration des prédicats discontigus
 :- discontiguous jouer/0.
@@ -42,7 +43,8 @@ choisir_mode_jeu :-
     writeln("9. Tester Minimax vs Minimax - Poids des colonnes"),
     writeln("10. Tester Minimax Defensive vs Minimax - Poids des colonnes"),
     writeln("11. Tester Aléatoire vs Defensive"),
-    writeln("12. Quitter"),
+    writeln("12. Tester Minimax vs Defensive Ameliore"),
+    writeln("13. Quitter"),
     catch(read(Mode), _, Mode = invalide),
     (integer(Mode), between(1, 12, Mode) ->
         (Mode = 1 ->
@@ -68,6 +70,8 @@ choisir_mode_jeu :-
         ; Mode = 11 ->
             tester_aleatoire_vs_defensive
         ; Mode = 12 ->
+            tester_performances_defensive_ameliore
+        ; Mode = 13 ->
             writeln("Au revoir !"), halt
         )
     ;
