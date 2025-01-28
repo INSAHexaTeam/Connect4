@@ -46,12 +46,10 @@ demander_colonne_humain(_Joueur, Colonne) :-
 
 % Gestion du choix pour une IA aléatoire
 demander_colonne_ia_aleatoire(_Joueur, Colonne) :-
-    % writeln('L IA (aléatoire) réfléchit...'),
     aleatoire:choisir_colonne_ia(Colonne).  % Appel au module aléatoire
 
 % Gestion du choix pour une IA utilisant Minimax
 demander_colonne_ia_minimax(_Joueur, Colonne) :-
-    % writeln("L'IA (Minimax) réfléchit..."),
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax:choisir_colonne_minimax(Plateau, Colonne) ->
         true
@@ -61,7 +59,6 @@ demander_colonne_ia_minimax(_Joueur, Colonne) :-
 
 % Gestion du choix pour une IA utilisant Minimax avec poids des colonnes
 demander_colonne_ia_minimax_poids_colonnes(Joueur, Colonne) :-
-    %writeln("L'IA (Minimax - Poids des colonnes) réfléchit..."),
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax_poids_colonnes:choisir_colonne_minimax_poids_colonnes(Plateau, Colonne) ->
         true
@@ -72,7 +69,6 @@ demander_colonne_ia_minimax_poids_colonnes(Joueur, Colonne) :-
 
 % Gestion du choix pour une IA utilisant Minimax avec defense mechanism
 demander_colonne_ia_minimax_defensive(Joueur, Colonne) :-
-    writeln("L'IA (Minimax - Defensive des colonnes) réfléchit..."),
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax_defensive:choisir_colonne_minimax_defensive(Plateau, Colonne) ->
         true
@@ -81,10 +77,9 @@ demander_colonne_ia_minimax_defensive(Joueur, Colonne) :-
         fail).
 
 demander_colonne_ia_minimax_defensive_ameliore(Joueur, Colonne) :-
-    writeln("L'IA (Minimax - Defensive des colonnes amelioré) réfléchit..."),
     plateau_actuel(Plateau),  % Récupère le plateau actuel
     (minimax_defensive_ameliore:choisir_colonne_minimax_defensive_ameliore(Plateau, Colonne) ->
-        format('L IA (~w) a choisi la colonne ~w.\n', [Joueur, Colonne])
+        true
     ;
         writeln('[ERREUR] L IA n a pas pu jouer : aucun mouvement possible.'),
         fail).
