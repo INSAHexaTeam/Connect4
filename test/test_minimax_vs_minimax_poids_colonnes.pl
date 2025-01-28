@@ -19,13 +19,12 @@
 configurations_plateau_remplis_poids_colonnes([
     [['X', 'X', 'X'], [], [], [], [], [], []],  % Victoire possible pour X
     [[], [], [], [], [], [], ['O', 'O', 'O']],  % Victoire possible pour O
+    [[], [], ['X'], ['X'], [], ['X'], ['X']],      % Plateau presque victoire pour O
     [[], [], [], ['O'], [], ['O'], ['O']],      % Plateau presque victoire pour O
-    [[], [], [], ['X'], [], ['X'], ['X']],      % Plateau presque victoire pour O
     [['X'], ['O', 'X'], ['X', 'O', 'X'], ['O', 'O', 'O'], ['X'], ['O'], ['X']],  % Diagonale pour X
-    [['O'], ['X', 'O'], ['X', 'O', 'O'], ['O', 'O', 'X'], ['X'], ['O'], ['X']],  % Diagonale pour X
+    [['O'], ['X', 'O'], ['X', 'O', 'O'], ['O', 'O', 'X'], ['X'], ['O'], ['X']],  % Diagonale pour O
     [['X', 'X'], [], [], [], [], [], []],        % Victoire presque pour X
-    [['O', 'O'], [], [], [], [], [], []],       % Victoire presque pour O
-    [['O'], ['X', 'O', 'X', 'O'], ['X', 'O', 'O'], ['O', 'O', 'X'], ['X'], ['O'], ['X']]
+    [[], ['O', 'O'], [], [], [], [], []]
 ]).
 
 % Définir des configurations de plateau VIDES
@@ -42,8 +41,15 @@ tester_configurations_remplis_poids_colonnes :-
         (
             retractall(plateau_actuel(_)),
             assert(plateau_actuel(Config)),
+            writeln(""),
+            writeln("Nouveau plateau :"),
             afficher_plateau(Config),
-            jouer_une_partie_poids_colonnes(ia_minimax, ia_minimax_poids_colonnes, 'X')
+            writeln("Le joueur X (IA minimax_poids_colonnes) commence."),
+            jouer_une_partie_poids_colonnes(ia_minimax_poids_colonnes, ia_minimax, 'X'),
+            retractall(plateau_actuel(_)),
+            assert(plateau_actuel(Config)),
+            writeln("Le joueur O (IA minimax_defensive) commence."),
+            jouer_une_partie_poids_colonnes(ia_minimax, ia_minimax_poids_colonnes, 'O')
         )
     ).
 

@@ -15,6 +15,7 @@
 :- retractall(coups_ia_minimax_poids_colonnes(_)), assert(coups_ia_minimax_poids_colonnes([])).
 :- retractall(coups_ia_minimax_defensive(_)), assert(coups_ia_minimax_defensive([])).
 
+% Définir plusieurs configurations de plateau NON VIDES
 configurations_plateau_remplis_def_col([
     [['X', 'X', 'X'], [], [], [], [], [], []],  % Victoire possible pour X
     [[], [], [], [], [], [], ['O', 'O', 'O']],  % Victoire possible pour O
@@ -44,11 +45,11 @@ tester_configurations_remplis_def_col :-
             writeln("Nouveau plateau :"),
             afficher_plateau(Config),
             writeln("Le joueur X (IA minimax_poids_colonnes) commence."),
-            jouer_une_partie_defensive(ia_minimax_poids_colonnes, ia_minimax_defensive, 'X'),
+            jouer_une_partie_def_col(ia_minimax_poids_colonnes, ia_minimax_defensive, 'X'),
             retractall(plateau_actuel(_)),
             assert(plateau_actuel(Config)),
             writeln("Le joueur O (IA minimax_defensive) commence."),
-            jouer_une_partie_defensive(ia_minimax_defensive, ia_minimax_poids_colonnes, 'O')
+            jouer_une_partie_def_col(ia_minimax_defensive, ia_minimax_poids_colonnes, 'O')
         )
     ).
 
@@ -129,7 +130,7 @@ jouer_plusieurs_parties_def_col(_, _, _, 0) :- !.
 jouer_plusieurs_parties_def_col(Plateau, IA1, IA2, N) :-
     retractall(plateau_actuel(_)),
     assert(plateau_actuel(Plateau)),
-    (N mod 2 =:= 0 -> jouer_une_partie_defensive(IA1, IA2, 'X') ; jouer_une_partie_defensive(IA2, IA1, 'O')),
+    (N mod 2 =:= 0 -> jouer_une_partie_def_col(IA1, IA2, 'X') ; jouer_une_partie_def_col(IA1, IA2, 'O')),
     N1 is N - 1,
     jouer_plusieurs_parties_def_col(Plateau, IA1, IA2, N1).
 
