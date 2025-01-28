@@ -29,30 +29,30 @@ configurations_plateau_remplis_def_col([
 ]).
 
 % Définir des configurations de plateau VIDES
-configurations_plateau_vides_defensive([
+configurations_plateau_vides_def_col([
     [[], [], [], [], [], [], []]
 ]).
 
 % Pour chaque configuration, on affiche le plateau, on joue,
 % puis on affiche le vainqueur et le nombre de coups.
-tester_configurations_remplis_defensive :-
-    configurations_plateau_remplis_def_col(Configs),
+tester_configurations_remplis_def_col :-
+    configurations_plateau_remplis_defensive(Configs),
     forall(
         member(Config, Configs),
         (
             retractall(plateau_actuel(_)),
             assert(plateau_actuel(Config)),
             afficher_plateau(Config),
-            jouer_une_partie_defensive(ia_minimax_poids_colonnes, ia_minimax_defensive, 'X')
+            jouer_une_partie_def_col(ia_minimax_poids_colonnes, ia_minimax_defensive, 'X')
         )
     ).
 
 % Idem pour les plateaux vides
-tester_configurations_vides_defensive(N) :-
+tester_configurations_vides_def_col(N) :-
     configurations_plateau_vides_defensive(Configs),
     forall(
         member(Config, Configs),
-        jouer_plusieurs_parties_defensive(Config, ia_minimax_poids_colonnes, ia_minimax_defensive, N)
+        jouer_plusieurs_parties_def_col(Config, ia_minimax_poids_colonnes, ia_minimax_defensive, N)
     ).
 
 % On regroupe tout dans tester_performances
@@ -69,23 +69,23 @@ tester_performances_defensive_poids_colonnes :-
 
     % Tests sur plateaux NON VIDES, un par un
     writeln("Tests des IA sur plateaux NON VIDES :"),
-    tester_configurations_remplis_defensive,
+    tester_configurations_remplis_def_col,
     % Affichage du bilan
-    afficher_bilan_non_vides_defensive,
+    afficher_bilan_non_vides_def_col,
 
     % Tests sur plateaux VIDES
     writeln("\nTest des IA sur des plateaux vides :"),
-    tester_configurations_vides_defensive(10),
-    afficher_bilan_vides_defensive.
+    tester_configurations_vides_def_col(10),
+    afficher_bilan_vides_def_col.
 
 % On affiche le bilan des plateaux NON VIDES
-afficher_bilan_non_vides_defensive :-
+afficher_bilan_non_vides_def_col :-
     victoires_ia_minimax_poids_colonnes(VM),
     victoires_ia_minimax_defensive(VMD),
     coups_ia_minimax_poids_colonnes(LCM),
     coups_ia_minimax_defensive(LCMD),
-    moyenne_coups_defensive(LCM, MCM),
-    moyenne_coups_defensive(LCMD, MCMD),
+    moyenne_coups_def_col(LCM, MCM),
+    moyenne_coups_def_col(LCMD, MCMD),
     format("Nombre de victoires de l'IA minimax_poids_colonnes : ~w\n", [VM]),
     format("Nombre de victoires de l'IA minimax_defensive : ~w\n", [VMD]),
     format("Nombre moyen de coups avant victoire pour l'IA minimax_poids_colonnes : ~2f\n", [MCM]),
@@ -103,13 +103,13 @@ afficher_bilan_non_vides_defensive :-
     assert(coups_ia_minimax_defensive([])).
 
 % Bilan final sur les plateaux VIDES
-afficher_bilan_vides_defensive :-
+afficher_bilan_vides_def_col :-
     victoires_ia_minimax_poids_colonnes(VM),
     victoires_ia_minimax_defensive(VMD),
     coups_ia_minimax_poids_colonnes(LCM),
     coups_ia_minimax_defensive(LCMD),
-    moyenne_coups_defensive(LCM, MCM),
-    moyenne_coups_defensive(LCMD, MCMD),
+    moyenne_coups_def_col(LCM, MCM),
+    moyenne_coups_def_col(LCMD, MCMD),
     sum_list(LCM, TotalM), sum_list(LCMD, TotalMD),
     format("Nombre de test : 10\n", []),
     format("Nombre de victoires de l'IA minimax_poids_colonnes : ~w\n", [VM]),
@@ -120,20 +120,20 @@ afficher_bilan_vides_defensive :-
     format("Nombre total de coups pour l'IA minimax_defensive : ~w\n", [TotalMD]).
 
 % Jouer plusieurs parties sur un même plateau
-jouer_plusieurs_parties_defensive(_, _, _, 0) :- !.
-jouer_plusieurs_parties_defensive(Plateau, IA1, IA2, N) :-
+jouer_plusieurs_parties_def_col(_, _, _, 0) :- !.
+jouer_plusieurs_parties_def_col(Plateau, IA1, IA2, N) :-
     retractall(plateau_actuel(_)),
     assert(plateau_actuel(Plateau)),
-    (N mod 2 =:= 0 -> jouer_une_partie_defensive(IA1, IA2, 'X') ; jouer_une_partie_defensive(IA1, IA2, 'O')),
+    (N mod 2 =:= 0 -> jouer_une_partie_def_col(IA1, IA2, 'X') ; jouer_une_partie_def_col(IA1, IA2, 'O')),
     N1 is N - 1,
-    jouer_plusieurs_parties_defensive(Plateau, IA1, IA2, N1).
+    jouer_plusieurs_parties_def_col(Plateau, IA1, IA2, N1).
 
 % Jouer une partie complète IA1 vs IA2
-jouer_une_partie_defensive(IA1, IA2, PremierJoueur) :-
-    jouer_tour_ia_defensive(PremierJoueur, IA1, IA2, 0).
+jouer_une_partie_def_col(IA1, IA2, PremierJoueur) :-
+    jouer_tour_ia_def_col(PremierJoueur, IA1, IA2, 0).
 
 % Gérer un tour de jeu pour deux IA
-jouer_tour_ia_defensive(Joueur, TypeJoueur1, TypeJoueur2, NbCoups) :-
+jouer_tour_ia_def_col(Joueur, TypeJoueur1, TypeJoueur2, NbCoups) :-
     plateau_actuel(Plateau),
     (Joueur = 'X' -> TypeJoueur = TypeJoueur1 ; TypeJoueur = TypeJoueur2),
     demander_colonne(Joueur, Colonne, TypeJoueur),
@@ -146,20 +146,20 @@ jouer_tour_ia_defensive(Joueur, TypeJoueur1, TypeJoueur2, NbCoups) :-
             afficher_plateau(NouveauPlateau),
             (Joueur = 'X' -> JoueurTexte = "X (IA minimax_poids_colonnes)" ; JoueurTexte = "O (IA minimax_defensive)"),
             format("Le joueur ~w a gagné en ~w coups!\n", [JoueurTexte, TotalCoups]),
-            incrementer_compteur_victoires_defensive(TypeJoueur, TotalCoups),
+            incrementer_compteur_victoires_def_col(TypeJoueur, TotalCoups),
             !
         ;
             changer_joueur(Joueur, ProchainJoueur),
             retractall(plateau_actuel(_)),
             assert(plateau_actuel(NouveauPlateau)),
-            jouer_tour_ia_defensive(ProchainJoueur, TypeJoueur1, TypeJoueur2, NbCoups + 1)
+            jouer_tour_ia_def_col(ProchainJoueur, TypeJoueur1, TypeJoueur2, NbCoups + 1)
         )
     ;
-        jouer_tour_ia_defensive(Joueur, TypeJoueur1, TypeJoueur2, NbCoups)
+        jouer_tour_ia_def_col(Joueur, TypeJoueur1, TypeJoueur2, NbCoups)
     ).
 
 % Incrémenter et stocker les données de victoire
-incrementer_compteur_victoires_defensive(TypeJoueur, NbCoups) :-
+incrementer_compteur_victoires_def_col(TypeJoueur, NbCoups) :-
     ( TypeJoueur = ia_minimax_poids_colonnes ->
         victoires_ia_minimax_poids_colonnes(VM),
         VM2 is VM + 1,
@@ -181,8 +181,8 @@ incrementer_compteur_victoires_defensive(TypeJoueur, NbCoups) :-
     ).
 
 % Calculer la moyenne de la liste de coups
-moyenne_coups_defensive([], 0) :- !.
-moyenne_coups_defensive(Liste, Moyenne) :-
+moyenne_coups_def_col([], 0) :- !.
+moyenne_coups_def_col(Liste, Moyenne) :-
     sum_list(Liste, Somme),
     length(Liste, N),
     Moyenne is Somme / N.
