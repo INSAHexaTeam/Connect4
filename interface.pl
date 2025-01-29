@@ -150,7 +150,6 @@ creer_bouton(Dialog, Texte, Action,Pos) :-
 % Création de la grille de jeu
 nouvelle_partie :-
     % Récupérer le choix de l'IA et nettoyer la référence
-    % Récupérer le choix de l'IA avant de fermer le menu
     nb_getval(selecteur_ia, SelecteurIA),
     get(SelecteurIA, selection, TypeIA),
     nb_setval(type_ia, TypeIA),  % Stocker le type d'IA pour la partie
@@ -304,26 +303,29 @@ quitter_jeu :-
 
 % Afficher les règles du jeu
 afficher_regles :-
-    new(@menu, dialog('Règles du Puissance 4')),
-    send(@menu, size, size(300, 200)),
+    % Vérifier si une fenêtre de règles existe déjà et la détruire
+    (object(@regles) -> send(@regles, destroy) ; true),
+    
+    new(@regles, dialog('Règles du Puissance 4')),
+    send(@regles, size, size(300, 200)),
     
     new(Texte, text('Règles du jeu :')),
     send(Texte, font, font(helvetica, bold, 14)),
-    send(@menu, append, Texte),
-    send(@menu, append, label(space, '')),
+    send(@regles, append, Texte),
+    send(@regles, append, label(space, '')),
     
     new(Regles, text),
     send(Regles, font, font(helvetica, normal, 12)),
     send(Regles, append, '- Les joueurs jouent tour à tour\n'),
     send(Regles, append, '- Le premier à aligner 4 jetons gagne\n'),
     send(Regles, append, '- Les jetons tombent en bas de la colonne'),
-    send(@menu, append, Regles),
+    send(@regles, append, Regles),
     
-    new(Bouton, button('OK', message(@menu, destroy))),
+    new(Bouton, button('OK', message(@regles, destroy))),
     send(Bouton, font, font(helvetica, normal, 12)),
-    send(@menu, append, Bouton),
+    send(@regles, append, Bouton),
     
-    send(@menu, open_centered).
+    send(@regles, open_centered).
 
 % Prédicat pour mettre à jour l'interface graphique
 mettre_a_jour_interface(Plateau) :-
