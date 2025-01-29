@@ -39,7 +39,7 @@ choisir_mode_jeu :-
     writeln("4. Joueur vs IA (Minimax) - Poids des colonnes"),
     writeln("5. Joueur vs IA (Minimax) - Defensive"),
     writeln("6. Joueur vs IA (Minimax) - Defensive amélioré"),
-    writeln("7. Tester les performances des IA"),
+    writeln("7. Tester Aléatoire vs Minimax"),
     writeln("8. Tester Minimax vs Defensive"),
     writeln("9. Tester Minimax vs Minimax - Poids des colonnes"),
     writeln("10. Tester Minimax Defensive vs Minimax - Poids des colonnes"),
